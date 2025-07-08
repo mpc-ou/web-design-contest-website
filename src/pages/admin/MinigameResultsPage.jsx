@@ -22,7 +22,7 @@ const AdminMinigameResultsPage = () => {
 
   const fetchMinigames = async () => {
     try {
-      const response = await apiService.getAllMinigames();
+      const response = await apiService.getMinigames();
       setMinigames(response.data);
     } catch (err) {
       console.error('Error fetching minigames:', err);
@@ -180,7 +180,7 @@ const AdminMinigameResultsPage = () => {
                   <div className="flex items-center">
                     <TicketIcon className="w-8 h-8 text-blue-500 mr-3" />
                     <div>
-                      <div className="text-2xl font-bold">{minigameData.ticketStats.takenTickets}</div>
+                      <div className="text-2xl font-bold">{minigameData.takenNumbers ? minigameData.takenNumbers.length : 0}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Total Tickets</div>
                     </div>
                   </div>
@@ -191,7 +191,7 @@ const AdminMinigameResultsPage = () => {
                     <ChartBarIcon className="w-8 h-8 text-green-500 mr-3" />
                     <div>
                       <div className="text-2xl font-bold">
-                        {Math.round((minigameData.ticketStats.takenTickets / selectedMinigame.maxNumber) * 100)}%
+                        {selectedMinigame && minigameData.takenNumbers ? Math.round((minigameData.takenNumbers.length / selectedMinigame.maxNumber) * 100) : 0}%
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Fill Rate</div>
                     </div>

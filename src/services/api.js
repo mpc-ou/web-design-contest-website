@@ -106,6 +106,7 @@ export const apiService = {
   createMinigame: (data) => api.post('/api/minigames', data),
   getMinigames: () => api.get('/api/minigames'),
   getMinigamesByContest: (contestId) => api.get(`/api/minigames/by-contest/${contestId}`),
+  getMinigameTicketInfo: (minigameId) => api.get(`/api/minigames/ticket-info/${minigameId}`),
   updateMinigame: (id, data) => api.put(`/api/minigames/${id}`, data, {
     headers: {
       'Content-Type': 'multipart/form-data',

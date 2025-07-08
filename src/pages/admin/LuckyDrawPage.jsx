@@ -32,7 +32,7 @@ const AdminLuckyDrawPage = () => {
 
   const fetchMinigames = async () => {
     try {
-      const response = await apiService.getAllMinigames();
+      const response = await apiService.getMinigames();
       setMinigames(response.data);
     } catch (err) {
       console.error('Error fetching minigames:', err);
@@ -151,7 +151,7 @@ const AdminLuckyDrawPage = () => {
           {rows.map((row, rowIndex) => (
             <div key={rowIndex} className="flex gap-2 justify-center">
               {row.map(number => {
-                const ticket = tickets.find(t => t.number === number);
+                const ticket = (tickets && Array.isArray(tickets)) ? tickets.find(t => t.number === number) : null;
                 const isWinner = winners.some(w => w.number === number);
                 const isLastWinner = lastWinner && lastWinner.number === number;
                 
@@ -268,7 +268,7 @@ const AdminLuckyDrawPage = () => {
                   <div className="flex space-x-3">
                     <button
                       onClick={handleDrawWinner}
-                      disabled={drawing || minigameData.ticketStats.takenTickets === 0}
+                      disabled={drawing || (minigameData.takenNumbers ? minigameData.takenNumbers.length === 0 : true)}
                       className="btn btn-primary flex items-center"
                     >
                       {drawing ? (
@@ -301,7 +301,7 @@ const AdminLuckyDrawPage = () => {
                   <div className="flex items-center">
                     <TicketIcon className="w-8 h-8 text-blue-500 mr-3" />
                     <div>
-                      <div className="text-2xl font-bold">{minigameData.ticketStats.takenTickets}</div>
+                      <div className="text-2xl font-bold">{minigameData.takenNumbers ? minigameData.takenNumbers.length : 0}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Total Tickets</div>
                     </div>
                   </div>
@@ -322,7 +322,7 @@ const AdminLuckyDrawPage = () => {
                     <ChartBarIcon className="w-8 h-8 text-green-500 mr-3" />
                     <div>
                       <div className="text-2xl font-bold">
-                        {Math.round((minigameData.ticketStats.takenTickets / selectedMinigame.maxNumber) * 100)}%
+                        {selectedMinigame && minigameData.takenNumbers ? Math.round((minigameData.takenNumbers.length / selectedMinigame.maxNumber) * 100) : 0}%
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Fill Rate</div>
                     </div>
@@ -334,7 +334,9 @@ const AdminLuckyDrawPage = () => {
                     <UserIcon className="w-8 h-8 text-purple-500 mr-3" />
                     <div>
                       <div className="text-2xl font-bold">
-                        {new Set(minigameData.tickets.map(t => t.user?._id)).size}
+                        {minigameData.tickets && Array.isArray(minigameData.tickets)
+                          ? new Set(minigameData.tickets.map(t => t.user?._id)).size
+                          : 0}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Unique Users</div>
                     </div>

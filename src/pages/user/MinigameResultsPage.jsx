@@ -23,7 +23,7 @@ const UserMinigameResultsPage = () => {
 
   const fetchMinigames = async () => {
     try {
-      const response = await apiService.getAllMinigames();
+      const response = await apiService.getMinigames();
       setMinigames(response.data);
     } catch (err) {
       console.error('Error fetching minigames:', err);

@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './',
+  base: '/web-design-contest-website/',
   server: {
     allowedHosts: ['.konnn04.live', 'localhost'],
     port: 3000,
