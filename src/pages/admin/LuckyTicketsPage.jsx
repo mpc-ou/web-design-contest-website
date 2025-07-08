@@ -30,7 +30,7 @@ const AdminLuckyTicketsPage = () => {
     try {
       const [ticketsResponse, minigamesResponse] = await Promise.all([
         apiService.getLuckyTickets(),
-        apiService.getAllMinigames()
+        apiService.getMinigames()
       ]);
       setLuckyTickets(ticketsResponse.data);
       setMinigames(minigamesResponse.data);

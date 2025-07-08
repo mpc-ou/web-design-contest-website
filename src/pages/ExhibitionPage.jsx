@@ -26,8 +26,9 @@ const ExhibitionPage = () => {
 
   // Filter exhibitions by search term and active tab
   const filteredExhibitions = exhibitions.filter(exhibition => {
-    const matchesSearch = exhibition.team.teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         exhibition.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = exhibition.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         exhibition.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         exhibition.team?.teamName?.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (activeTab === 'all') return matchesSearch;
     
@@ -51,112 +52,135 @@ const ExhibitionPage = () => {
         </p>
       </div>
 
+      {/* Search and Filter */}
       <div className="mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex overflow-x-auto py-2 space-x-4">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex-1 max-w-md">
+            <input
+              type="text"
+              placeholder="Search exhibitions..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          
+          <div className="flex space-x-2">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
                 activeTab === 'all'
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
-              All Projects
+              All
             </button>
-            <button
-              onClick={() => setActiveTab('winners')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeTab === 'winners'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              Winners
-            </button>
-            <button
-              onClick={() => setActiveTab('finalists')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeTab === 'finalists'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              Finalists
-            </button>
-          </div>
-          
-          <div className="w-full md:w-64">
-            <input
-              type="text"
-              placeholder="Search projects..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="input"
-            />
+            {/* Add more filter buttons as needed */}
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="flex justify-center items-center min-h-[60vh]">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : error ? (
-        <div className="text-center text-red-500 py-10">
-          <p>{error}</p>
+        <div className="text-center text-red-600 dark:text-red-400">
+          {error}
         </div>
       ) : filteredExhibitions.length === 0 ? (
-        <div className="text-center py-10">
-          <h2 className="text-xl font-semibold mb-2">No projects found</h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            {searchTerm ? 'Try a different search term' : 'There are no projects to display at the moment.'}
-          </p>
+        <div className="text-center text-gray-600 dark:text-gray-400">
+          {searchTerm ? 'No exhibitions found matching your search.' : 'No exhibitions available at the moment.'}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredExhibitions.map((exhibition) => (
+          {filteredExhibitions.map(exhibition => (
             <div key={exhibition._id} className="card overflow-hidden">
-              <div className="relative pb-[56.25%]">
-                {exhibition.images && exhibition.images.length > 0 ? (
-                  <img
-                    src={exhibition.images[0]}
-                    alt={`${exhibition.team.teamName} project`}
-                    className="absolute top-0 left-0 w-full h-full object-cover"
+              {/* Exhibition Images */}
+              {exhibition.images && exhibition.images.length > 0 && (
+                <div className="h-48 bg-gray-200 dark:bg-gray-700">
+                  <img 
+                    src={exhibition.images[0]} 
+                    alt={exhibition.title}
+                    className="w-full h-full object-cover"
                   />
-                ) : (
-                  <div className="absolute top-0 left-0 w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <span className="text-gray-500 dark:text-gray-400">No image available</span>
-                  </div>
-                )}
-                
-                {exhibition.award && (
-                  <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-bold">
-                    {exhibition.award}
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
               
-              <div className="p-4">
-                <h3 className="font-bold text-lg mb-2">{exhibition.team.teamName}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                  {exhibition.description.length > 100
-                    ? `${exhibition.description.substring(0, 100)}...`
-                    : exhibition.description}
+              <div className="p-6">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold mb-2">{exhibition.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    by <span className="font-medium">{exhibition.team?.teamName}</span>
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Contest: {exhibition.contest?.name}
+                  </p>
+                </div>
+                
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
+                  {exhibition.description}
                 </p>
                 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">
-                    {new Date(exhibition.createdAt).toLocaleDateString()}
-                  </span>
+                {/* Links */}
+                <div className="space-y-2">
+                  {exhibition.githubUrl && (
+                    <a
+                      href={exhibition.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-blue-500 hover:text-blue-700 text-sm font-medium"
+                    >
+                      View on GitHub →
+                    </a>
+                  )}
                   
-                  <button
-                    onClick={() => window.open(exhibition.projectUrl, '_blank')}
-                    className="text-blue-500 hover:text-blue-700 text-sm font-medium"
-                    disabled={!exhibition.projectUrl}
-                  >
-                    View Project →
-                  </button>
+                  {exhibition.websiteUrl && (
+                    <a
+                      href={exhibition.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-blue-500 hover:text-blue-700 text-sm font-medium"
+                    >
+                      Visit Website →
+                    </a>
+                  )}
+                  
+                  {exhibition.videoUrl && (
+                    <a
+                      href={exhibition.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-blue-500 hover:text-blue-700 text-sm font-medium"
+                    >
+                      Watch Demo Video →
+                    </a>
+                  )}
+                </div>
+                
+                {/* Additional Images */}
+                {exhibition.images && exhibition.images.length > 1 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      More Images ({exhibition.images.length - 1})
+                    </h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {exhibition.images.slice(1, 4).map((image, index) => (
+                        <div key={index} className="aspect-square bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                          <img 
+                            src={image} 
+                            alt={`${exhibition.title} image ${index + 2}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                  Created: {new Date(exhibition.createdAt).toLocaleDateString()}
                 </div>
               </div>
             </div>

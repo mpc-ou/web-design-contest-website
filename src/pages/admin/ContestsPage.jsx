@@ -17,17 +17,21 @@ const AdminContestsPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingContest, setEditingContest] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [thumbnail, setThumbnail] = useState(null);
+  const [images, setImages] = useState([]);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [imagesPreview, setImagesPreview] = useState([]);
 
   const [formData, setFormData] = useState({
     code: '',
     name: '',
     description: '',
-    startTime: '',
-    endTime: '',
     registrationStart: '',
     registrationEnd: '',
     round1Start: '',
     round1End: '',
+    round2Start: '',
+    round2End: '',
     finalStart: '',
     finalEnd: ''
   });
@@ -48,21 +52,41 @@ const AdminContestsPage = () => {
     }
   };
 
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files[0];
+    setThumbnail(file);
+    if (file) {
+      setThumbnailPreview(URL.createObjectURL(file));
+    } else {
+      setThumbnailPreview(null);
+    }
+  };
+
+  const handleImagesChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImages(files);
+    setImagesPreview(files.map(file => URL.createObjectURL(file)));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
     try {
+      const form = new FormData();
+      Object.entries(formData).forEach(([key, value]) => form.append(key, value));
+      if (thumbnail) form.append('thumbnail', thumbnail);
+      images.forEach((img) => form.append('images', img));
       if (editingContest) {
-        await apiService.updateContest(editingContest._id, formData);
+        await apiService.updateContest(editingContest._id, form);
         setSuccess('Contest updated successfully');
       } else {
-        await apiService.createContest(formData);
+        await apiService.createContest(form);
         setSuccess('Contest created successfully');
       }
-      
       resetForm();
       fetchContests();
     } catch (err) {
-      console.error('Error saving contest:', err);
       setError(err.response?.data?.error || 'Failed to save contest');
     }
   };
@@ -73,12 +97,12 @@ const AdminContestsPage = () => {
       code: contest.code,
       name: contest.name,
       description: contest.description,
-      startTime: new Date(contest.startTime).toISOString().slice(0, 16),
-      endTime: new Date(contest.endTime).toISOString().slice(0, 16),
       registrationStart: new Date(contest.registrationStart).toISOString().slice(0, 16),
       registrationEnd: new Date(contest.registrationEnd).toISOString().slice(0, 16),
       round1Start: new Date(contest.round1Start).toISOString().slice(0, 16),
       round1End: new Date(contest.round1End).toISOString().slice(0, 16),
+      round2Start: contest.round2Start ? new Date(contest.round2Start).toISOString().slice(0, 16) : '',
+      round2End: contest.round2End ? new Date(contest.round2End).toISOString().slice(0, 16) : '',
       finalStart: new Date(contest.finalStart).toISOString().slice(0, 16),
       finalEnd: new Date(contest.finalEnd).toISOString().slice(0, 16)
     });
@@ -99,12 +123,16 @@ const AdminContestsPage = () => {
 
   const resetForm = () => {
     setFormData({
-      code: '', name: '', description: '', startTime: '', endTime: '',
-      registrationStart: '', registrationEnd: '', round1Start: '', round1End: '',
+      code: '', name: '', description: '',
+      registrationStart: '', registrationEnd: '', round1Start: '', round1End: '', round2Start: '', round2End: '',
       finalStart: '', finalEnd: ''
     });
     setEditingContest(null);
     setShowForm(false);
+    setThumbnail(null);
+    setImages([]);
+    setThumbnailPreview(null);
+    setImagesPreview([]);
   };
 
   const handleChange = (e) => {
@@ -152,7 +180,7 @@ const AdminContestsPage = () => {
               {editingContest ? 'Edit Contest' : 'Create Contest'}
             </h2>
             
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} encType="multipart/form-data">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Contest Code</label>
@@ -214,30 +242,7 @@ const AdminContestsPage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Contest Start</label>
-                  <input
-                    type="datetime-local"
-                    name="startTime"
-                    value={formData.startTime}
-                    onChange={handleChange}
-                    required
-                    className="input"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Contest End</label>
-                  <input
-                    type="datetime-local"
-                    name="endTime"
-                    value={formData.endTime}
-                    onChange={handleChange}
-                    required
-                    className="input"
-                  />
-                </div>
-              </div>
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -259,6 +264,29 @@ const AdminContestsPage = () => {
                     value={formData.round1End}
                     onChange={handleChange}
                     required
+                    className="input"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Round 2 Start \(Opt\)</label>
+                  <input
+                    type="datetime-local"
+                    name="round2Start"
+                    value={formData.round2Start}
+                    onChange={handleChange}
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Round 2 End \(Opt\)</label>
+                  <input
+                    type="datetime-local"
+                    name="round2End"
+                    value={formData.round2End}
+                    onChange={handleChange}
                     className="input"
                   />
                 </div>
@@ -287,6 +315,41 @@ const AdminContestsPage = () => {
                     className="input"
                   />
                 </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Thumbnail (1 ảnh)</label>
+                <input
+                  type="file"
+                  name="thumbnail"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  className="input"
+                />
+                {thumbnailPreview && (
+                  <div className="mt-2">
+                    <img src={thumbnailPreview} alt="Thumbnail preview" className="h-24 rounded border" />
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Images (nhiều ảnh)</label>
+                <input
+                  type="file"
+                  name="images"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImagesChange}
+                  className="input"
+                />
+                {imagesPreview.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {imagesPreview.map((src, idx) => (
+                      <img key={idx} src={src} alt={`Preview ${idx + 1}`} className="h-20 w-20 object-cover rounded border" />
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex space-x-4">
@@ -354,8 +417,8 @@ const AdminContestsPage = () => {
                       {new Date(contest.registrationEnd).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(contest.startTime).toLocaleDateString()} -
-                      {new Date(contest.endTime).toLocaleDateString()}
+                      {new Date(contest.overStart).toLocaleDateString()} -
+                      {new Date(contest.overEnd).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs rounded-full font-medium ${

@@ -28,9 +28,14 @@ const DashboardPage = () => {
         const contestsResponse = await apiService.getContests();
         setContests(contestsResponse.data);
 
-        // Submissions would normally be fetched via a specific API endpoint
-        // For now, we'll assume we get them from the teams data or contest data
-        // setSubmissions(submissionsResponse.data);
+        // Fetch user's submissions (if any)
+        try {
+          const submissionsResponse = await apiService.getSubmissions();
+          setSubmissions(submissionsResponse.data);
+        } catch (submissionErr) {
+          console.log('No submissions found or access denied');
+          setSubmissions([]);
+        }
         
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
@@ -56,7 +61,7 @@ const DashboardPage = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Welcome back, {userInfo?.displayName || 'User'}!
+          Welcome back, {userInfo?.firstName || userInfo?.displayName || 'User'}!
         </p>
       </div>
 
@@ -71,7 +76,12 @@ const DashboardPage = () => {
         <div className="card p-6">
           <div className="flex flex-col items-center">
             <UserCircleIcon className="w-16 h-16 text-blue-500 mb-4" />
-            <h2 className="text-xl font-bold mb-1">{userInfo?.displayName}</h2>
+            <h2 className="text-xl font-bold mb-1">
+              {userInfo?.firstName && userInfo?.lastName 
+                ? `${userInfo.firstName} ${userInfo.lastName}`
+                : userInfo?.displayName || 'User'
+              }
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{userInfo?.email}</p>
             <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-medium">
               {userInfo?.role === 'admin' ? 'Administrator' : 'Contestant'}
@@ -110,7 +120,7 @@ const DashboardPage = () => {
             <h2 className="text-xl font-bold">Active Contests</h2>
           </div>
           <p className="text-3xl font-bold text-orange-500 mb-4">
-            {contests.filter(c => new Date(c.endTime) >= new Date()).length}
+            {contests.filter(c => c.status === 'register' || c.status === 'round1' || c.status === 'round2' || c.status === 'final').length}
           </p>
           <Link to="/" className="text-orange-500 hover:text-orange-700 text-sm font-medium">
             Browse Contests →
@@ -142,6 +152,7 @@ const DashboardPage = () => {
                       <h3 className="text-xl font-bold">{team.teamName}</h3>
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${
                         team.status === 'registered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                        team.status === 'qualified' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                         team.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                         'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                       }`}>
@@ -164,11 +175,15 @@ const DashboardPage = () => {
                     <div className="mb-4">
                       <h4 className="font-medium text-sm mb-2">Team Members:</h4>
                       <ul className="space-y-2">
-                        {team.members.map((member, idx) => (
-                          <li key={idx} className="text-sm">
-                            {member.fullName} ({member.studentId})
-                          </li>
-                        ))}
+                        {team.members && team.members.length > 0 ? (
+                          team.members.map((member, idx) => (
+                            <li key={idx} className="text-sm">
+                              {member.firstName} {member.lastName} ({member.email})
+                            </li>
+                          ))
+                        ) : (
+                          <li className="text-sm text-gray-500">No members found</li>
+                        )}
                       </ul>
                     </div>
                     
@@ -199,106 +214,43 @@ const DashboardPage = () => {
 
       {/* Upcoming Contests */}
       <div className="mb-10">
-        <h2 className="text-2xl font-bold mb-4">Upcoming Contests</h2>
+        <h2 className="text-2xl font-bold mb-4">Active Contests</h2>
         
         {contests.length === 0 ? (
           <div className="card p-6 text-center">
-            <p className="text-gray-600 dark:text-gray-400">No upcoming contests at the moment.</p>
+            <p className="text-gray-600 dark:text-gray-400">No contests available at the moment.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Contest Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Registration Period
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Contest Period
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {contests.map(contest => {
-                  const now = new Date();
-                  const regStart = new Date(contest.registrationStart);
-                  const regEnd = new Date(contest.registrationEnd);
-                  const contestStart = new Date(contest.startTime);
-                  const contestEnd = new Date(contest.endTime);
-                  
-                  let status;
-                  if (now < regStart) {
-                    status = "Registration not open";
-                  } else if (now >= regStart && now <= regEnd) {
-                    status = "Registration open";
-                  } else if (now > regEnd && now < contestStart) {
-                    status = "Registration closed";
-                  } else if (now >= contestStart && now <= contestEnd) {
-                    status = "In progress";
-                  } else {
-                    status = "Completed";
-                  }
-                  
-                  // Check if user is registered for this contest
-                  const isRegistered = teams.some(team => team.contest === contest._id);
-                  
-                  return (
-                    <tr key={contest._id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium">{contest.name}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Code: {contest.code}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm">
-                          {new Date(contest.registrationStart).toLocaleDateString()} - {new Date(contest.registrationEnd).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm">
-                          {new Date(contest.startTime).toLocaleDateString()} - {new Date(contest.endTime).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                          status === "Registration open" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" :
-                          status === "In progress" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" :
-                          status === "Completed" ? "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200" :
-                          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                        }`}>
-                          {status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {isRegistered ? (
-                          <span className="text-green-600 dark:text-green-400 font-medium">Registered</span>
-                        ) : status === "Registration open" ? (
-                          <Link 
-                            to="/register" 
-                            state={{ contestId: contest._id, contestCode: contest.code }}
-                            className="text-blue-600 dark:text-blue-400 hover:underline"
-                          >
-                            Register
-                          </Link>
-                        ) : (
-                          <span className="text-gray-500 dark:text-gray-400">
-                            {status === "Registration not open" ? "Not open yet" : "Closed"}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {contests
+              .filter(contest => contest.status === 'register' || contest.status === 'round1' || contest.status === 'round2' || contest.status === 'final')
+              .slice(0, 6)
+              .map(contest => (
+                <div key={contest._id} className="card overflow-hidden">
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2">{contest.name}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+                      {contest.description}
+                    </p>
+                    
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <span className="font-medium">Status:</span> {contest.status}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">Code:</span> {contest.code}
+                      </p>
+                    </div>
+                    
+                    <Link 
+                      to={`/contest/${contest._id}`}
+                      className="text-blue-500 hover:text-blue-700 text-sm font-medium"
+                    >
+                      View Details →
+                    </Link>
+                  </div>
+                </div>
+              ))}
           </div>
         )}
       </div>

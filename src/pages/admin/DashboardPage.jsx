@@ -13,12 +13,13 @@ import {
 
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalTeams: 0,
-    totalSubmissions: 0,
-    totalContests: 0,
-    totalExhibitions: 0,
-    totalMinigames: 0
+    contests: { total: 0, current: 0, ended: 0 },
+    users: { total: 0 },
+    teams: { total: 0 },
+    submissions: { total: 0 },
+    exhibitions: { total: 0 },
+    minigames: { total: 0, current: 0, ended: 0 },
+    luckyTickets: { total: 0 }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,23 +27,8 @@ const AdminDashboardPage = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [users, teams, submissions, contests, exhibitions, minigames] = await Promise.all([
-          apiService.getUsers(),
-          apiService.getAllTeams(),
-          apiService.getSubmissions(),
-          apiService.getContests(),
-          apiService.getExhibitions(),
-          apiService.getAllMinigames()
-        ]);
-
-        setStats({
-          totalUsers: users.data.length,
-          totalTeams: teams.data.length,
-          totalSubmissions: submissions.data.length,
-          totalContests: contests.data.length,
-          totalExhibitions: exhibitions.data.length,
-          totalMinigames: minigames.data.length
-        });
+        const response = await apiService.getAdminStats();
+        setStats(response.data);
       } catch (err) {
         console.error('Error fetching stats:', err);
         setError('Failed to load dashboard statistics');
@@ -84,7 +70,7 @@ const AdminDashboardPage = () => {
             <UsersIcon className="w-8 h-8 text-blue-500 mr-3" />
             <h2 className="text-xl font-bold">Users</h2>
           </div>
-          <p className="text-3xl font-bold text-blue-500 mb-2">{stats.totalUsers}</p>
+          <p className="text-3xl font-bold text-blue-500 mb-2">{stats.users.total}</p>
           <Link to="/admin/users" className="text-blue-500 hover:text-blue-700 text-sm font-medium">
             Manage Users →
           </Link>
@@ -95,7 +81,7 @@ const AdminDashboardPage = () => {
             <UserGroupIcon className="w-8 h-8 text-green-500 mr-3" />
             <h2 className="text-xl font-bold">Teams</h2>
           </div>
-          <p className="text-3xl font-bold text-green-500 mb-2">{stats.totalTeams}</p>
+          <p className="text-3xl font-bold text-green-500 mb-2">{stats.teams.total}</p>
           <Link to="/admin/teams" className="text-green-500 hover:text-green-700 text-sm font-medium">
             Manage Teams →
           </Link>
@@ -106,7 +92,7 @@ const AdminDashboardPage = () => {
             <ClipboardDocumentCheckIcon className="w-8 h-8 text-purple-500 mr-3" />
             <h2 className="text-xl font-bold">Submissions</h2>
           </div>
-          <p className="text-3xl font-bold text-purple-500 mb-2">{stats.totalSubmissions}</p>
+          <p className="text-3xl font-bold text-purple-500 mb-2">{stats.submissions.total}</p>
           <Link to="/admin/submissions" className="text-purple-500 hover:text-purple-700 text-sm font-medium">
             View Submissions →
           </Link>
@@ -117,7 +103,12 @@ const AdminDashboardPage = () => {
             <CalendarIcon className="w-8 h-8 text-orange-500 mr-3" />
             <h2 className="text-xl font-bold">Contests</h2>
           </div>
-          <p className="text-3xl font-bold text-orange-500 mb-2">{stats.totalContests}</p>
+          <div className="mb-2">
+            <p className="text-3xl font-bold text-orange-500">{stats.contests.total}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {stats.contests.current} active, {stats.contests.ended} ended
+            </p>
+          </div>
           <Link to="/admin/contests" className="text-orange-500 hover:text-orange-700 text-sm font-medium">
             Manage Contests →
           </Link>
@@ -128,7 +119,7 @@ const AdminDashboardPage = () => {
             <TrophyIcon className="w-8 h-8 text-red-500 mr-3" />
             <h2 className="text-xl font-bold">Exhibitions</h2>
           </div>
-          <p className="text-3xl font-bold text-red-500 mb-2">{stats.totalExhibitions}</p>
+          <p className="text-3xl font-bold text-red-500 mb-2">{stats.exhibitions.total}</p>
           <Link to="/admin/exhibitions" className="text-red-500 hover:text-red-700 text-sm font-medium">
             Manage Exhibitions →
           </Link>
@@ -139,7 +130,12 @@ const AdminDashboardPage = () => {
             <PuzzlePieceIcon className="w-8 h-8 text-indigo-500 mr-3" />
             <h2 className="text-xl font-bold">Minigames</h2>
           </div>
-          <p className="text-3xl font-bold text-indigo-500 mb-2">{stats.totalMinigames}</p>
+          <div className="mb-2">
+            <p className="text-3xl font-bold text-indigo-500">{stats.minigames.total}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {stats.minigames.current} active, {stats.minigames.ended} ended
+            </p>
+          </div>
           <div className="space-y-1">
             <Link to="/admin/minigames" className="block text-indigo-500 hover:text-indigo-700 text-sm font-medium">
               Manage Minigames →
@@ -148,6 +144,17 @@ const AdminDashboardPage = () => {
               View Results →
             </Link>
           </div>
+        </div>
+
+        <div className="card p-6">
+          <div className="flex items-center mb-4">
+            <SparklesIcon className="w-8 h-8 text-yellow-500 mr-3" />
+            <h2 className="text-xl font-bold">Lucky Tickets</h2>
+          </div>
+          <p className="text-3xl font-bold text-yellow-500 mb-2">{stats.luckyTickets.total}</p>
+          <Link to="/admin/lucky-tickets" className="text-yellow-500 hover:text-yellow-700 text-sm font-medium">
+            Manage Lucky Tickets →
+          </Link>
         </div>
       </div>
 

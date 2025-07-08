@@ -34,7 +34,7 @@ const AdminMinigamesPage = () => {
   const fetchData = async () => {
     try {
       const [minigamesResponse, contestsResponse] = await Promise.all([
-        apiService.getAllMinigames(),
+        apiService.getMinigames(),
         apiService.getContests()
       ]);
       setMinigames(minigamesResponse.data);

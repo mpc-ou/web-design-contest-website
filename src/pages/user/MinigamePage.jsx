@@ -25,37 +25,32 @@ const MinigamePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const contestsResponse = await apiService.getContests();
-        const activeContests = contestsResponse.data.filter(
-          contest => new Date(contest.endTime) >= new Date()
-        );
-        setContests(activeContests);
-        
-        if (activeContests.length === 1) {
-          setSelectedContest(activeContests[0]._id);
-          fetchMinigames(activeContests[0]._id);
-        } else {
-          setLoading(false);
-        }
+        setLoading(true);
+        const minigamesResponse = await apiService.getMinigames();
+        setMinigames(minigamesResponse.data);
       } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load contests. Please try again later.');
+        console.error('Error fetching minigames:', err);
+        setError('Failed to load minigames. Please try again later.');
+      } finally {
         setLoading(false);
       }
     };
-    
     fetchData();
   }, []);
-  
+
   useEffect(() => {
-    if (selectedContest) {
-      fetchMinigames(selectedContest);
-    }
-  }, [selectedContest]);
+    setSelectedMinigame(null);
+    setMinigameData(null);
+    setSelectedNumber(null);
+    setError('');
+    setSuccess('');
+  }, []);
 
   useEffect(() => {
     if (selectedMinigame) {
       fetchMinigameData(selectedMinigame._id);
+    } else {
+      setMinigameData(null);
     }
   }, [selectedMinigame]);
   
@@ -64,16 +59,18 @@ const MinigamePage = () => {
       setLoading(true);
       const response = await apiService.getMinigamesByContest(contestId);
       setMinigames(response.data);
-      
       // Auto-select first active minigame
       const activeMinigame = response.data.find(mg => isMinigameActive(mg));
       if (activeMinigame) {
         setSelectedMinigame(activeMinigame);
-        await fetchMinigameData(activeMinigame._id);
+      } else {
+        setSelectedMinigame(null);
       }
     } catch (err) {
       console.error('Error fetching minigames:', err);
       setError('Failed to load minigames. Please try again later.');
+      setMinigames([]);
+      setSelectedMinigame(null);
     } finally {
       setLoading(false);
     }
@@ -86,20 +83,24 @@ const MinigamePage = () => {
     } catch (err) {
       console.error('Error fetching minigame data:', err);
       setError('Failed to load minigame data.');
+      setMinigameData(null);
     }
   };
   
   const handleContestChange = (e) => {
     setSelectedContest(e.target.value);
     setSelectedMinigame(null);
+    setMinigameData(null);
     setSelectedNumber(null);
+    setError('');
+    setSuccess('');
   };
   
   const handleMinigameChange = (minigame) => {
     setSelectedMinigame(minigame);
     setSelectedNumber(null);
     setError('');
-    fetchMinigameData(minigame._id);
+    setSuccess('');
   };
 
   const handleNumberSelect = (number) => {
@@ -290,87 +291,65 @@ const MinigamePage = () => {
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
-      ) : contests.length === 0 ? (
+      ) : minigames.length === 0 ? (
         <div className="text-center py-6">
           <p className="text-gray-600 dark:text-gray-400 mb-2">
-            No active contests available.
+            No minigames available.
           </p>
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Contest Selection */}
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold mb-4">Select Contest</h2>
-            <select
-              value={selectedContest}
-              onChange={handleContestChange}
-              className="input max-w-md"
-            >
-              <option value="">Select a contest</option>
-              {contests.map(contest => (
-                <option key={contest._id} value={contest._id}>
-                  {contest.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Minigame Selection */}
-          {selectedContest && minigames.length > 0 && (
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold mb-4">Available Minigames</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {minigames.map(minigame => {
-                  const isActive = isMinigameActive(minigame);
-                  const userHasTicket = minigameData?.userTickets && 
-                    minigameData.userTickets.length > 0 && 
-                    selectedMinigame?._id === minigame._id;
-                  
-                  return (
-                    <div 
-                      key={minigame._id}
-                      className={`
-                        p-4 rounded-lg border-2 cursor-pointer transition-all
-                        ${selectedMinigame?._id === minigame._id 
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                        }
-                        ${!isActive ? 'opacity-50' : ''}
-                      `}
-                      onClick={() => isActive && handleMinigameChange(minigame)}
-                    >
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-semibold text-lg">{minigame.name}</h3>
-                        <div className="flex flex-col items-end space-y-1">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            isActive 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-                          }`}>
-                            {isActive ? 'Active' : 'Inactive'}
+          <div className="card p-6">
+            <h2 className="text-xl font-semibold mb-4">Available Minigames</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {minigames.map(minigame => {
+                const isActive = isMinigameActive(minigame);
+                const userHasTicket = minigameData?.userTickets && 
+                  minigameData.userTickets.length > 0 && 
+                  selectedMinigame?._id === minigame._id;
+                return (
+                  <div 
+                    key={minigame._id}
+                    className={`
+                      p-4 rounded-lg border-2 cursor-pointer transition-all
+                      ${selectedMinigame?._id === minigame._id 
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }
+                      ${!isActive ? 'opacity-50' : ''}
+                    `}
+                    onClick={() => handleMinigameChange(minigame)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-semibold text-lg">{minigame.name}</h3>
+                      <div className="flex flex-col items-end space-y-1">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          isActive 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                        }`}>
+                          {isActive ? 'Active' : 'Inactive'}
+                        </span>
+                        {userHasTicket && (
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            Registered
                           </span>
-                          {userHasTicket && (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                              Registered
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Numbers: 1 - {minigame.maxNumber}
-                      </p>
-                      
-                      <div className="mt-3 text-xs text-gray-500 dark:text-gray-500">
-                        <div>Start: {new Date(minigame.startTime).toLocaleString()}</div>
-                        <div>End: {new Date(minigame.endTime).toLocaleString()}</div>
+                        )}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      Numbers: 1 - {minigame.maxNumber}
+                    </p>
+                    <div className="mt-3 text-xs text-gray-500 dark:text-gray-500">
+                      <div>Start: {new Date(minigame.startTime).toLocaleString()}</div>
+                      <div>End: {new Date(minigame.endTime).toLocaleString()}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
+          </div>
 
           {/* Number Matrix */}
           {selectedMinigame && (

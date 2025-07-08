@@ -4,51 +4,39 @@ import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 
 const RegisterPage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, userInfo } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get contestId and contestCode from location state (if navigated from ContestInfoPage)
-  const initialContestCode = location.state?.contestCode || '';
+  // Get contestId from location state (if navigated from ContestInfoPage)
+  const initialContestId = location.state?.contestId || '';
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [contests, setContests] = useState([]);
   const [formData, setFormData] = useState({
-    contestCode: initialContestCode,
+    contestId: initialContestId,
     teamName: '',
     table: '',
-    member1: {
-      fullName: '',
-      studentId: '',
-      email: currentUser?.email || ''
-    },
-    member2: {
-      fullName: '',
-      studentId: '',
-      email: ''
-    }
+    memberEmails: [] 
   });
   
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!currentUser) {
       navigate('/login', { state: { from: location } });
     }
   }, [currentUser, navigate, location]);
   
-  // Fetch available contests
   useEffect(() => {
     const fetchContests = async () => {
       try {
         const response = await apiService.getContests();
-        // Filter only contests that are currently in registration period
         const availableContests = response.data.filter(contest => {
           const now = new Date();
           const regStart = new Date(contest.registrationStart);
           const regEnd = new Date(contest.registrationEnd);
-          return now >= regStart && now <= regEnd;
+          return contest.status === 'register' && now >= regStart && now <= regEnd;
         });
         setContests(availableContests);
       } catch (err) {
@@ -62,21 +50,31 @@ const RegisterPage = () => {
   
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleMemberEmailChange = (index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      memberEmails: prev.memberEmails.map((email, i) => i === index ? value : email)
+    }));
+  };
+
+  const addMemberEmail = () => {
+    setFormData(prev => ({
+      ...prev,
+      memberEmails: [...prev.memberEmails, '']
+    }));
+  };
+
+  const removeMemberEmail = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      memberEmails: prev.memberEmails.filter((_, i) => i !== index)
+    }));
   };
   
   const handleSubmit = async (e) => {
@@ -86,27 +84,26 @@ const RegisterPage = () => {
     setSuccess('');
     
     try {
-      const response = await apiService.registerTeam(formData);
+      const allEmails = [currentUser?.email, ...formData.memberEmails].filter(Boolean);
+      // if (allEmails.length < 2) {
+      //   setError('At least 2 team members are required.');
+      //   setLoading(false);
+      //   return;
+      // }
+      const registrationData = {
+        contestId: formData.contestId,
+        teamName: formData.teamName,
+        table: formData.table,
+        memberEmails: formData.memberEmails
+      };
+      await apiService.registerForContest(registrationData);
       setSuccess('Team registered successfully! Redirecting to dashboard...');
-      
-      // Reset form
       setFormData({
-        contestCode: '',
+        contestId: '',
         teamName: '',
         table: '',
-        member1: {
-          fullName: '',
-          studentId: '',
-          email: currentUser?.email || ''
-        },
-        member2: {
-          fullName: '',
-          studentId: '',
-          email: ''
-        }
+        memberEmails: []
       });
-      
-      // Redirect after a short delay
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
@@ -139,20 +136,20 @@ const RegisterPage = () => {
           <h2 className="text-xl font-semibold mb-4">Contest Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="contestCode" className="block text-sm font-medium mb-1">
-                Contest Code <span className="text-red-500">*</span>
+              <label htmlFor="contestId" className="block text-sm font-medium mb-1">
+                Contest <span className="text-red-500">*</span>
               </label>
               <select
-                id="contestCode"
-                name="contestCode"
-                value={formData.contestCode}
+                id="contestId"
+                name="contestId"
+                value={formData.contestId}
                 onChange={handleChange}
                 required
                 className="input"
               >
                 <option value="">Select a contest</option>
                 {contests.map(contest => (
-                  <option key={contest._id} value={contest.code}>
+                  <option key={contest._id} value={contest._id}>
                     {contest.name} ({contest.code})
                   </option>
                 ))}
@@ -179,137 +176,79 @@ const RegisterPage = () => {
               <label htmlFor="table" className="block text-sm font-medium mb-1">
                 Table Number/Letter <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 id="table"
                 name="table"
                 value={formData.table}
                 onChange={handleChange}
                 required
                 className="input"
-                placeholder="e.g., A12, B5, etc."
-              />
+              >
+                <option value="">Select a table</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+              </select>
             </div>
           </div>
         </div>
         
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Team Leader (Member 1)</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="member1.fullName" className="block text-sm font-medium mb-1">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="member1.fullName"
-                name="member1.fullName"
-                value={formData.member1.fullName}
-                onChange={handleChange}
-                required
-                className="input"
-                placeholder="Enter full name"
-              />
+          <h2 className="text-xl font-semibold mb-4">Team Members</h2>
+          <div className="mb-2">
+            <label className="block text-sm font-medium mb-1">Leader (You)</label>
+            <input
+              type="email"
+              value={userInfo?.email || currentUser?.email || ''}
+              readOnly
+              className="input bg-gray-100 cursor-not-allowed"
+            />
+            <div className="text-xs text-gray-500 mt-1">
+              {userInfo?.firstName || userInfo?.displayName || 'Leader'}
+              {userInfo?.lastName ? ' ' + userInfo.lastName : ''}
+              {userInfo?.role === 'admin' && ' (Admin)'}
             </div>
-            
-            <div>
-              <label htmlFor="member1.studentId" className="block text-sm font-medium mb-1">
-                Student ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="member1.studentId"
-                name="member1.studentId"
-                value={formData.member1.studentId}
-                onChange={handleChange}
-                required
-                className="input"
-                placeholder="Enter student ID"
-              />
-            </div>
-            
-            <div className="md:col-span-2">
-              <label htmlFor="member1.email" className="block text-sm font-medium mb-1">
-                Email <span className="text-red-500">*</span>
-              </label>
+          </div>
+          <div className="mb-2 font-medium">Members</div>
+          {formData.memberEmails.map((email, index) => (
+            <div key={index} className="flex gap-2 mb-2">
               <input
                 type="email"
-                id="member1.email"
-                name="member1.email"
-                value={formData.member1.email}
-                onChange={handleChange}
+                value={email}
+                onChange={e => handleMemberEmailChange(index, e.target.value)}
+                placeholder={`Member ${index + 2} email`}
+                className="input flex-1"
                 required
-                className="input"
-                placeholder="Enter email"
-                readOnly={!!currentUser?.email}
               />
-              {currentUser?.email && (
-                <p className="text-xs text-gray-500 mt-1">
-                  This is your logged-in email and cannot be changed.
-                </p>
-              )}
+              <button
+                type="button"
+                onClick={() => removeMemberEmail(index)}
+                className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                aria-label="Remove member"
+              >Remove</button>
             </div>
-          </div>
+          ))}
+          <button
+            type="button"
+            onClick={addMemberEmail}
+            className="text-blue-500 hover:text-blue-700 text-sm font-medium mt-2"
+          >
+            + Add Another Member
+          </button>
         </div>
         
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Team Member 2 (Optional)</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="member2.fullName" className="block text-sm font-medium mb-1">
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="member2.fullName"
-                name="member2.fullName"
-                value={formData.member2.fullName}
-                onChange={handleChange}
-                className="input"
-                placeholder="Enter full name"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="member2.studentId" className="block text-sm font-medium mb-1">
-                Student ID
-              </label>
-              <input
-                type="text"
-                id="member2.studentId"
-                name="member2.studentId"
-                value={formData.member2.studentId}
-                onChange={handleChange}
-                className="input"
-                placeholder="Enter student ID"
-              />
-            </div>
-            
-            <div className="md:col-span-2">
-              <label htmlFor="member2.email" className="block text-sm font-medium mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                id="member2.email"
-                name="member2.email"
-                value={formData.member2.email}
-                onChange={handleChange}
-                className="input"
-                placeholder="Enter email"
-              />
-            </div>
-          </div>
-        </div>
-        
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-          <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            By registering, you agree to abide by the contest rules and guidelines.
-          </div>
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="btn btn-outline"
+            disabled={loading}
+          >
+            Cancel
+          </button>
           <button
             type="submit"
+            className="btn btn-primary"
             disabled={loading}
-            className="w-full btn btn-primary py-3"
           >
             {loading ? 'Registering...' : 'Register Team'}
           </button>

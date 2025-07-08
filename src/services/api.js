@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Create axios instance
 const api = axios.create({
@@ -10,58 +10,138 @@ const api = axios.create({
   },
 });
 
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Just clear the tokens
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('backendToken');
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('userInfoTimestamp');
+    }
+    return Promise.reject(error);
+  }
+);
+
 // API service object
 export const apiService = {
   // Auth
-  login: (credentials) => api.post('/api/auth/login', credentials),
+  login: (userData) => api.post('/api/auth/login', userData),
+  getCurrentUser: () => api.get('/api/users/me'),
 
-  // Contest
-  getContests: () => api.get('/api/admin/contests'),
-  createContest: (data) => api.post('/api/contest/', data),
-  updateContest: (id, data) => api.put(`/api/contest/${id}`, data),
-  deleteContest: (id) => api.delete(`/api/contest/${id}`),
-  registerTeam: (data) => api.post('/api/contest/register', data),
+  // Users
+  getUsers: () => api.get('/api/users'),
+  updateUser: (id, data) => api.patch(`/api/users/${id}`, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  deleteUser: (id) => api.delete(`/api/users/${id}`),
 
-  // Team
-  getMyTeams: () => api.get('/api/team/my'),
-  getAllTeams: () => api.get('/api/admin/teams'),
-  registerTeam: (data) => api.post('/api/team/register', data),
-  updateTeam: (id, data) => api.put(`/api/team/${id}`, data),
-  deleteTeam: (id) => api.delete(`/api/team/${id}`),
+  // Contests
+  getContests: () => api.get('/api/contests'),
+  createContest: (data) => api.post('/api/contests', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  updateContest: (id, data) => api.patch(`/api/contests/${id}`, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  deleteContest: (id) => api.delete(`/api/contests/${id}`),
+  registerForContest: (data) => api.post('/api/contests/register', data),
 
-  // Submission
-  submitProject: (data) => api.post('/api/submission/submit', data),
-  getSubmissions: () => api.get('/api/admin/submissions'),
-  updateSubmission: (id, data) => api.put(`/api/submission/${id}`, data),
-  deleteSubmission: (id) => api.delete(`/api/submission/${id}`),
+  // Teams
+  getMyTeams: () => api.get('/api/teams/my'),
+  getAllTeams: () => api.get('/api/teams'),
+  updateTeam: (id, data) => api.put(`/api/teams/${id}`, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  deleteTeam: (id) => api.delete(`/api/teams/${id}`),
 
-  // Exhibition
-  uploadExhibition: (data) => api.post('/api/exhibition/upload', data),
-  getExhibitions: () => api.get('/api/admin/exhibitions'),
-  updateExhibition: (id, data) => api.put(`/api/exhibition/${id}`, data),
-  deleteExhibition: (id) => api.delete(`/api/exhibition/${id}`),
+  // Submissions
+  submitProject: (data) => api.post('/api/submissions/submit', data),
+  getSubmissions: () => api.get('/api/submissions'),
+  updateSubmission: (id, data) => api.put(`/api/submissions/${id}`, data),
+  deleteSubmission: (id) => api.delete(`/api/submissions/${id}`),
 
-  // Minigame
-  createMinigame: (data) => api.post('/api/minigame/', data),
-  getMinigamesByContest: (contestId) => api.get(`/api/minigame/by-contest/${contestId}`),
-  getAllMinigames: () => api.get('/api/admin/minigames'),
-  updateMinigame: (id, data) => api.put(`/api/minigame/${id}`, data),
-  deleteMinigame: (id) => api.delete(`/api/minigame/${id}`),
+  // Exhibitions
+  createExhibition: (data) => api.post('/api/exhibitions', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  getExhibitions: () => api.get('/api/exhibitions'),
+  getExhibitionByTeam: (teamId) => api.get(`/api/exhibitions/by-team/${teamId}`),
+  getExhibitionsByContest: (contestId) => api.get(`/api/exhibitions/by-contest/${contestId}`),
+  getExhibition: (id) => api.get(`/api/exhibitions/${id}`),
+  updateExhibition: (id, data) => api.put(`/api/exhibitions/${id}`, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  deleteExhibition: (id) => api.delete(`/api/exhibitions/${id}`),
 
-  // Lucky Ticket
-  getMinigameTicketInfo: (minigameId) => api.get(`/api/lucky/by-minigame/${minigameId}`),
-  getLuckyTickets: () => api.get('/api/admin/lucky-tickets'),
+  // Minigames
+  createMinigame: (data) => api.post('/api/minigames', data),
+  getMinigames: () => api.get('/api/minigames'),
+  getMinigamesByContest: (contestId) => api.get(`/api/minigames/by-contest/${contestId}`),
+  updateMinigame: (id, data) => api.put(`/api/minigames/${id}`, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  deleteMinigame: (id) => api.delete(`/api/minigames/${id}`),
+
+  // Lucky Draw
   registerLuckyTicket: (data) => api.post('/api/lucky/register', data),
-  deleteLuckyTicket: (id) => api.delete(`/api/admin/lucky-tickets/${id}`),
+  getLuckyTickets: () => api.get('/api/lucky'),
+  getLuckyTicketsByMinigame: (minigameId) => api.get(`/api/lucky/by-minigame/${minigameId}`),
+  drawWinner: (minigameId) => api.post(`/api/lucky/draw/${minigameId}`),
+  getWinners: (minigameId) => api.get(`/api/lucky/winners/${minigameId}`),
+  resetWinners: (minigameId) => api.post(`/api/lucky/reset-winners/${minigameId}`),
+  deleteLuckyTicket: (id) => api.delete(`/api/lucky/${id}`),
 
-  // Lucky Draw Features
-  drawWinner: (minigameId) => api.post(`/api/admin/lucky-draw/${minigameId}/draw`),
-  getWinners: (minigameId) => api.get(`/api/admin/lucky-draw/${minigameId}/winners`),
-  resetWinners: (minigameId) => api.delete(`/api/admin/lucky-draw/${minigameId}/reset`),
+  // Common Data
+  getCommonData: (code) => api.get(`/api/common?code=${code}`),
+  createCommonData: (data) => api.post('/api/common', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  updateCommonData: (code, data) => api.patch(`/api/common/${code}`, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  deleteCommonData: (code) => api.delete(`/api/common/${code}`),
 
-  // Admin
-  getUsers: () => api.get('/api/admin/users'),
-  updateUserRole: (userId, role) => api.put(`/api/admin/users/${userId}/role`, { role }),
+  // Admin Stats
+  getAdminStats: () => api.get('/api/admin/stats'),
+  performLuckyDraw: (minigameId) => api.get(`/api/admin/lucky-draw/${minigameId}`),
+  resetWinnersAdmin: (minigameId) => api.post(`/api/admin/reset-winners/${minigameId}`),
+  rollbackLuckyDraw: (minigameId) => api.post(`/api/admin/rollback-lucky-draw/${minigameId}`),
+  endContest: (contestId) => api.post(`/api/admin/end-contest/${contestId}`),
 };
 
 export default api;
