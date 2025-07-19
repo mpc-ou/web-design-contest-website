@@ -1,14 +1,37 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { SunIcon, MoonIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  Drawer,
+  IconButton,
+  Link,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Toolbar,
+  Typography,
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
+import LogoutIcon from '@mui/icons-material/Logout';
+import LoginIcon from '@mui/icons-material/Login';
 
 const Navbar = () => {
-  const { currentUser, userInfo, isAdmin, signOut } = useAuth();
+  const { currentUser, userInfo, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
+  };
 
   const handleLogout = async () => {
     try {
@@ -19,180 +42,133 @@ const Navbar = () => {
     }
   };
 
+  const menuItems = [
+    { text: 'Home', path: '/' },
+    ...(currentUser ? [{ text: 'Profile', path: '/profile' }] : []),
+  ];
+
+  const drawer = (
+    <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
+      <List>
+        {menuItems.map((item) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton component={RouterLink} to={item.path}>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+        {currentUser ? (
+          <ListItem disablePadding>
+            <ListItemButton onClick={handleLogout}>
+              <LogoutIcon sx={{ mr: 1 }} />
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+          </ListItem>
+        ) : (
+          <ListItem disablePadding>
+            <ListItemButton component={RouterLink} to="/login">
+              <LoginIcon sx={{ mr: 1 }} />
+              <ListItemText primary="Login" />
+            </ListItemButton>
+          </ListItem>
+        )}
+      </List>
+    </Box>
+  );
+
   return (
-    <nav className="bg-white dark:bg-gray-800 shadow-md">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold text-blue-600 dark:text-blue-400">Web Design Contest</span>
-            </Link>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:ml-6 md:flex md:space-x-4">
-              <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                Home
-              </Link>
-              <Link to="/exhibition" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                Exhibition
-              </Link>
-              {currentUser && (
-                <>
-                  <Link to="/dashboard" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                    Dashboard
-                  </Link>
-                  <Link to="/teams" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                    My Teams
-                  </Link>
-                  <Link to="/minigame" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                    Minigame
-                  </Link>
-                </>
-              )}
-              {isAdmin && (
-                <Link to="/admin" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                  Admin
-                </Link>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-center">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Toggle theme"
+    <AppBar position="static" color="default" elevation={1}>
+      <Container>
+        <Toolbar disableGutters>
+          <Typography
+            variant="h6"
+            component={RouterLink}
+            to="/"
+            sx={{
+              mr: 2,
+              fontWeight: 700,
+              color: 'inherit',
+              textDecoration: 'none',
+              flexGrow: { xs: 1, md: 0 },
+            }}
+          >
+            Web Design Contest
+          </Typography>
+
+          {/* Desktop Navigation */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            {menuItems.map((item) => (
+              <Button
+                key={item.text}
+                component={RouterLink}
+                to={item.path}
+                sx={{ color: 'inherit', display: 'block', mx: 1 }}
+              >
+                {item.text}
+              </Button>
+            ))}
+          </Box>
+
+          {/* Theme Toggle */}
+          <IconButton onClick={toggleTheme} sx={{ ml: 1 }} color="inherit">
+            {theme === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
+
+          {/* User Authentication */}
+          {currentUser ? (
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', ml: 2 }}>
+              <Typography variant="body2" sx={{ mr: 2 }}>
+                {userInfo?.displayName || currentUser.email}
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </Box>
+          ) : (
+            <Button
+              component={RouterLink}
+              to="/login"
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<LoginIcon />}
+              sx={{ display: { xs: 'none', sm: 'flex' }, ml: 2 }}
             >
-              {theme === 'dark' ? (
-                <SunIcon className="h-5 w-5" />
-              ) : (
-                <MoonIcon className="h-5 w-5" />
-              )}
-            </button>
-            
-            {currentUser ? (
-              <div className="ml-3 relative hidden md:block">
-                <div className="flex items-center">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">
-                    {userInfo?.displayName || currentUser.email}
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="px-3 py-1 text-sm text-white bg-blue-500 hover:bg-blue-600 rounded-md"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="ml-3 px-3 py-1 text-sm text-white bg-blue-500 hover:bg-blue-600 rounded-md hidden md:block"
-              >
-                Login
-              </Link>
-            )}
-            
-            {/* Mobile menu button */}
-            <div className="md:hidden ml-2">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                aria-expanded={isMenuOpen}
-              >
-                {isMenuOpen ? (
-                  <XMarkIcon className="h-6 w-6" />
-                ) : (
-                  <Bars3Icon className="h-6 w-6" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link
-              to="/"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              to="/exhibition"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Exhibition
-            </Link>
-            {currentUser && (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/teams"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  My Teams
-                </Link>
-                <Link
-                  to="/minigame"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Minigame
-                </Link>
-              </>
-            )}
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Admin
-              </Link>
-            )}
-            {currentUser ? (
-              <div className="px-3 py-2">
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {userInfo?.displayName || currentUser.email}
-                </div>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full px-3 py-1 text-sm text-white bg-blue-500 hover:bg-blue-600 rounded-md"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="block px-3 py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <span className="w-full px-3 py-1 text-sm text-center text-white bg-blue-500 hover:bg-blue-600 rounded-md inline-block">
-                  Login
-                </span>
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-    </nav>
+              Login
+            </Button>
+          )}
+
+          {/* Mobile Menu Button */}
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ ml: 2, display: { md: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+        </Toolbar>
+      </Container>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true, 
+        }}
+      >
+        {drawer}
+      </Drawer>
+    </AppBar>
   );
 };
 

@@ -1,61 +1,28 @@
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import { Box, Container, Link, Typography } from '@mui/material';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="bg-white dark:bg-gray-800 shadow-inner">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <Link to="/" className="text-xl font-bold text-blue-600 dark:text-blue-400">
+    <Box component="footer" sx={{ 
+      py: 3, 
+      mt: 'auto', 
+      backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'background.paper' : 'grey.100' 
+    }}>
+      <Container maxWidth="lg">
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="body1" component="p" sx={{ mb: 1 }}>
+            <Link component={RouterLink} to="/" sx={{ fontWeight: 'bold', textDecoration: 'none' }}>
               Web Design Contest
             </Link>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Showcase your creativity and technical skills
-            </p>
-          </div>
-          
-          <div className="flex flex-wrap justify-center gap-6">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase mb-2">Resources</h3>
-              <ul className="space-y-1">
-                <li>
-                  <Link to="/faq" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400">
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400">
-                    Guidelines
-                  </a>
-                </li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase mb-2">Support</h3>
-              <ul className="space-y-1">
-                <li>
-                  <a href="mailto:support@webdesigncontest.edu.vn" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400">
-                    Contact
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400">
-                    Help Center
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 text-center text-sm text-gray-600 dark:text-gray-400">
-          © {currentYear} Web Design Contest. All rights reserved.
-        </div>
-      </div>
-    </footer>
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            © {currentYear} All rights reserved.
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

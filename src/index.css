@@ -1,57 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --color-primary: 59 130 246; /* blue-500 */
-  --color-secondary: 156 163 175; /* gray-400 */
+body, html {
+  transition: background-color 0.3s, color 0.3s;
+  min-height: 100vh;
 }
 
-.dark {
-  --color-primary: 96 165 250; /* blue-400 */
-  --color-secondary: 107 114 128; /* gray-500 */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-@layer base {
-  body {
-    @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
-  }
-
-  h1 {
-    @apply text-3xl md:text-4xl;
-  }
-
-  h2 {
-    @apply text-2xl md:text-3xl;
-  }
-
-  h3 {
-    @apply text-xl md:text-2xl;
-  }
-}
-
-@layer components {
-  .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
-  }
-
-  .btn-primary {
-    @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500;
-  }
-
-  .btn-secondary {
-    @apply bg-violet-500 text-white hover:bg-violet-600 focus:ring-violet-500;
-  }
-
-  .card {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden;
-  }
-
-  .input {
-    @apply block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700;
-  }
+main {
+  flex: 1 0 auto;
 }
