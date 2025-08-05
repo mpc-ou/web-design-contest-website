@@ -1,37 +1,22 @@
-import { useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  Drawer,
-  IconButton,
-  Link,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Toolbar,
-  Typography,
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import LogoutIcon from '@mui/icons-material/Logout';
-import LoginIcon from '@mui/icons-material/Login';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
+import { SunIcon, MoonIcon, Bars3Icon, BellIcon } from '@heroicons/react/24/outline';
+import { apiService } from '../../services/api';
+import NotificationPopup from './NotificationPopup';
 
 const Navbar = () => {
   const { currentUser, userInfo, signOut } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
+  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleLogout = async () => {
     try {
@@ -42,133 +27,187 @@ const Navbar = () => {
     }
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
+  // Theo dõi scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 200);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Fetch unread notifications count
+  useEffect(() => {
+    if (currentUser) {
+      fetchUnreadCount();
+      // Poll every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [currentUser]);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await apiService.getNotifications({
+        onlyUnread: 'true',
+        limit: 1
+      });
+      setUnreadCount(response.data.pagination?.total || 0);
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  };
+
   const menuItems = [
-    { text: 'Home', path: '/' },
-    ...(currentUser ? [{ text: 'Profile', path: '/profile' }] : []),
+    { text: 'Trang chủ', path: '/' },
+    { text: 'Cuộc thi', path: '/contests' },
+    { text: 'Triển lãm', path: '/exhibitions' },
+    { text: 'Đội thi', path: '/teams' },
+    { text: 'Minigames', path: '/minigames' },
+    ...(currentUser ? [{ text: 'Hồ sơ', path: '/profile' }] : []),
   ];
 
-  const drawer = (
-    <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
-      <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton component={RouterLink} to={item.path}>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-        {currentUser ? (
-          <ListItem disablePadding>
-            <ListItemButton onClick={handleLogout}>
-              <LogoutIcon sx={{ mr: 1 }} />
-              <ListItemText primary="Logout" />
-            </ListItemButton>
-          </ListItem>
-        ) : (
-          <ListItem disablePadding>
-            <ListItemButton component={RouterLink} to="/login">
-              <LoginIcon sx={{ mr: 1 }} />
-              <ListItemText primary="Login" />
-            </ListItemButton>
-          </ListItem>
-        )}
-      </List>
-    </Box>
-  );
-
   return (
-    <AppBar position="static" color="default" elevation={1}>
-      <Container>
-        <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            component={RouterLink}
-            to="/"
-            sx={{
-              mr: 2,
-              fontWeight: 700,
-              color: 'inherit',
-              textDecoration: 'none',
-              flexGrow: { xs: 1, md: 0 },
-            }}
-          >
-            Web Design Contest
-          </Typography>
+    <>
+      <header className={`
+        sticky top-0 z-50 w-full border-b transition-all duration-300 ease-in-out
+        ${isScrolled 
+          ? 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm' 
+          : 'bg-transparent backdrop-blur-none border-transparent'
+        }
+      `}>
+        <div className="container flex h-16 items-center">
+          <div className="mr-4 hidden md:flex">
+            <Link to="/" className="mr-6 flex items-center space-x-2">
+              {/* <span className="hidden font-bold sm:inline-block text-xl">
+                Web Design Contest
+              </span> */}
+              <img src="/img/logo.png" alt="Web Design Contest" width={100} />
+            </Link>
+            <nav className="flex items-center space-x-6 text-sm font-medium">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className="transition-colors hover:text-foreground/80 text-foreground/60"
+                >
+                  {item.text}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-          {/* Desktop Navigation */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {menuItems.map((item) => (
+          {/* Mobile menu */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
               <Button
-                key={item.text}
-                component={RouterLink}
-                to={item.path}
-                sx={{ color: 'inherit', display: 'block', mx: 1 }}
+                variant="ghost"
+                className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
               >
-                {item.text}
+                <Bars3Icon className="h-6 w-6" />
+                <span className="sr-only">Toggle Menu</span>
               </Button>
-            ))}
-          </Box>
+            </SheetTrigger>
+            <SheetContent side="left" className="pr-0">
+              <Link
+                to="/"
+                className="flex items-center"
+                onClick={() => setIsOpen(false)}
+              >
+                {/* <span className="font-bold">Web Design Contest</span> */}
+                <img src="/img/logo.png" alt="Web Design Contest" width={100} />
+              </Link>
+              <div className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
+                <div className="flex flex-col space-y-3">
+                  {menuItems.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setIsOpen(false)}
+                      className="text-sm font-medium transition-colors hover:text-primary"
+                    >
+                      {item.text}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
 
-          {/* Theme Toggle */}
-          <IconButton onClick={toggleTheme} sx={{ ml: 1 }} color="inherit">
-            {theme === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
+          <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+            <div className="w-full flex-1 md:w-auto md:flex-none">
+              <Link to="/" className="md:hidden">
+                <span className="font-bold">Web Design Contest</span>
+              </Link>
+            </div>
+            <nav className="flex items-center space-x-2">
+              {/* Notifications */}
+              {currentUser && (
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowNotifications(!showNotifications)}
+                  >
+                    <BellIcon className="h-[1.2rem] w-[1.2rem]" />
+                    {unreadCount > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0"
+                      >
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </Badge>
+                    )}
+                    <span className="sr-only">Thông báo</span>
+                  </Button>
+                </div>
+              )}
 
-          {/* User Authentication */}
-          {currentUser ? (
-            <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', ml: 2 }}>
-              <Typography variant="body2" sx={{ mr: 2 }}>
-                {userInfo?.displayName || currentUser.email}
-              </Typography>
               <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                startIcon={<LogoutIcon />}
-                onClick={handleLogout}
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
               >
-                Logout
+                <SunIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
               </Button>
-            </Box>
-          ) : (
-            <Button
-              component={RouterLink}
-              to="/login"
-              variant="contained"
-              color="primary"
-              size="small"
-              startIcon={<LoginIcon />}
-              sx={{ display: { xs: 'none', sm: 'flex' }, ml: 2 }}
-            >
-              Login
-            </Button>
-          )}
+              
+              {currentUser ? (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm hidden sm:block">
+                    {userInfo?.displayName || currentUser.email}
+                  </span>
+                  <Button variant="outline" size="sm" onClick={handleLogout}>
+                    Đăng xuất
+                  </Button>
+                </div>
+              ) : (
+                <Button asChild size="sm">
+                  <Link to="/login">Đăng nhập</Link>
+                </Button>
+              )}
+            </nav>
+          </div>
+        </div>
+      </header>
 
-          {/* Mobile Menu Button */}
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ ml: 2, display: { md: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-        </Toolbar>
-      </Container>
-
-      {/* Mobile Navigation Drawer */}
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true, 
-        }}
-      >
-        {drawer}
-      </Drawer>
-    </AppBar>
+      {/* Notification Popup */}
+      <NotificationPopup 
+        isOpen={showNotifications} 
+        onClose={() => setShowNotifications(false)} 
+      />
+    </>
   );
 };
 

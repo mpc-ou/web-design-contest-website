@@ -1,35 +1,31 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import {
-  Container,
-  Grid,
-  Card,
-  CardHeader,
-  CardContent,
-  Typography,
-  Button,
-  Box,
-  Paper,
-  Chip,
-  IconButton,
-  Tooltip,
-  CircularProgress,
-  Tabs,
-  Tab,
-  Divider,
-  Alert,
-  Snackbar,
-  Stack
-} from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import SecurityIcon from '@mui/icons-material/Security';
-import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Separator } from '../components/ui/separator';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { 
+  UserIcon, 
+  ShieldCheckIcon, 
+  KeyIcon, 
+  CubeIcon,
+  ArrowPathIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  ComputerDesktopIcon,
+  CalendarIcon,
+  MapPinIcon,
+  DevicePhoneMobileIcon,
+  BuildingOfficeIcon,
+  EnvelopeIcon,
+  GlobeAltIcon
+} from '@heroicons/react/24/outline';
 
 import CodeBlock from '../components/common/CodeBlock';
-import TokenDisplay from '../components/profile/TokenDisplay';
-
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { useNotification } from '../hooks/useNotification';
 import { decodeJwt } from '../utils/jwtUtils';
@@ -38,14 +34,11 @@ const ProfilePage = () => {
   const { currentUser, userInfo, refreshUserInfo } = useAuth();
   const [firebaseToken, setFirebaseToken] = useState('');
   const [backendToken, setBackendToken] = useState('');
-  const [tabValue, setTabValue] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [showFirebaseToken, setShowFirebaseToken] = useState(false);
+  const [showBackendToken, setShowBackendToken] = useState(false);
   const { copyToClipboard } = useCopyToClipboard();
   const { notification, showSuccess, showError } = useNotification();
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
 
   useEffect(() => {
     getTokens();
@@ -67,12 +60,12 @@ const ProfilePage = () => {
     }
   };
 
-  const handleCopyToClipboard = (text) => {
+  const handleCopyToClipboard = (text, label = 'Text') => {
     const success = copyToClipboard(text);
     if (success) {
-      showSuccess('Đã sao chép vào clipboard!');
+      showSuccess(`Đã sao chép ${label} vào clipboard!`);
     } else {
-      showError('Không thể sao chép. Vui lòng thử lại.');
+      showError(`Không thể sao chép ${label}. Vui lòng thử lại.`);
     }
   };
 
@@ -89,242 +82,507 @@ const ProfilePage = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const TokenDisplay = ({ token, show, onToggle, label }) => {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">{label}</span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onToggle}
+            >
+              {show ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleCopyToClipboard(token, label)}
+              disabled={!token}
+            >
+              <CubeIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="p-3 bg-muted rounded-md font-mono text-xs break-all max-h-24 overflow-y-auto">
+          {show ? token : '••••••••••••••••••••••••••••••••'}
+        </div>
+      </div>
+    );
+  };
+
   if (!currentUser) {
     return (
-      <Container maxWidth="lg" sx={{ textAlign: 'center', py: 5 }}>
-        <CircularProgress />
-        <Typography sx={{ mt: 2 }}>Đang tải thông tin người dùng...</Typography>
-      </Container>
+      <div className="container py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </div>
     );
   }
 
-  // Giải mã JWT token
   const decodedToken = firebaseToken ? decodeJwt(firebaseToken) : null;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
-          Developer Profile
-        </Typography>
+    <div className="container py-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-16 w-16">
+            <AvatarImage src={userInfo?.avatar || currentUser.photoURL} />
+            <AvatarFallback>
+              {userInfo?.firstName?.[0] || currentUser.displayName?.[0] || currentUser.email?.[0]}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-3xl font-bold">
+              {userInfo?.firstName && userInfo?.lastName 
+                ? `${userInfo.firstName} ${userInfo.lastName}`
+                : currentUser.displayName || 'Developer Profile'
+              }
+            </h1>
+            <p className="text-muted-foreground flex items-center gap-2">
+              {userInfo?.role === 'admin' && (
+                <Badge variant="secondary" className="mr-2">
+                  <ShieldCheckIcon className="h-3 w-3 mr-1" />
+                  Admin
+                </Badge>
+              )}
+              {userInfo?.email || currentUser.email}
+            </p>
+          </div>
+        </div>
         <Button 
-          variant="outlined" 
-          color="primary" 
-          startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />} 
+          variant="outline" 
           onClick={handleRefresh}
           disabled={refreshing}
         >
-          {refreshing ? 'Đang cập nhật...' : 'Cập nhật thông tin'}
+          <ArrowPathIcon className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          {refreshing ? 'Đang cập nhật...' : 'Cập nhật'}
         </Button>
-      </Box>
+      </div>
 
-      {/* API Token Preview - Always visible at top */}
-      <Card elevation={3} sx={{ mb: 3 }}>
-        <CardHeader 
-          title="Backend API Token"
-          titleTypographyProps={{ variant: 'h6' }}
-          avatar={<VpnKeyIcon color="primary" />}
-        />
+      {/* Quick Token Access */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <KeyIcon className="h-5 w-5" />
+            Backend API Token
+          </CardTitle>
+          <CardDescription>
+            Token để truy cập API backend (sử dụng trong development)
+          </CardDescription>
+        </CardHeader>
         <CardContent>
           {backendToken ? (
             <TokenDisplay 
               token={backendToken}
-              initialVisibility={false}
-              onCopy={handleCopyToClipboard}
+              show={showBackendToken}
+              onToggle={() => setShowBackendToken(!showBackendToken)}
+              label="Backend Token"
             />
           ) : (
-            <Alert severity="warning">
-              Không tìm thấy backend token. Hãy đăng xuất và đăng nhập lại.
+            <Alert>
+              <AlertDescription>
+                Không tìm thấy backend token. Hãy đăng xuất và đăng nhập lại.
+              </AlertDescription>
             </Alert>
           )}
         </CardContent>
       </Card>
 
-      {/* Tabs for different sections */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs 
-          value={tabValue} 
-          onChange={handleTabChange} 
-          aria-label="profile information tabs"
-          variant="fullWidth"
-        >
-          <Tab icon={<AccountBoxIcon />} iconPosition="start" label="Thông tin người dùng" />
-          <Tab icon={<SecurityIcon />} iconPosition="start" label="Thông tin bảo mật" />
-        </Tabs>
-      </Box>
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="profile" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="profile" className="flex items-center gap-2">
+            <UserIcon className="h-4 w-4" />
+            Thông tin
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <ShieldCheckIcon className="h-4 w-4" />
+            Bảo mật
+          </TabsTrigger>
+          <TabsTrigger value="dev" className="flex items-center gap-2">
+            <ComputerDesktopIcon className="h-4 w-4" />
+            Dev Zone
+          </TabsTrigger>
+        </TabsList>
 
-      {/* User Information Tab */}
-      {tabValue === 0 && (
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Card elevation={2}>
-              <CardHeader title="Thông tin cơ bản" titleTypographyProps={{ variant: 'h6' }} />
-              <CardContent>
-                <Stack spacing={2}>
-                  <Box>
-                    <Typography color="text.secondary" variant="body2" gutterBottom>
-                      Tên hiển thị
-                    </Typography>
-                    <Paper variant="outlined" sx={{ p: 2, backgroundColor: 'background.default' }}>
-                      {currentUser.displayName || 'Chưa đặt tên'}
-                    </Paper>
-                  </Box>
-                  
-                  <Box>
-                    <Typography color="text.secondary" variant="body2" gutterBottom>
-                      Email
-                    </Typography>
-                    <Paper variant="outlined" sx={{ p: 2, backgroundColor: 'background.default' }}>
-                      {currentUser.email}
-                    </Paper>
-                  </Box>
-                  
-                  <Box>
-                    <Typography color="text.secondary" variant="body2" gutterBottom>
-                      Xác thực email
-                    </Typography>
-                    <Paper variant="outlined" sx={{ p: 2, backgroundColor: 'background.default' }}>
-                      <Chip 
-                        label={currentUser.emailVerified ? "Đã xác thực" : "Chưa xác thực"} 
-                        color={currentUser.emailVerified ? "success" : "error"}
-                        size="small"
-                      />
-                    </Paper>
-                  </Box>
-                  
-                  <Box>
-                    <Typography color="text.secondary" variant="body2" gutterBottom>
-                      UID
-                    </Typography>
-                    <Box sx={{ display: 'flex' }}>
-                      <Paper 
-                        variant="outlined" 
-                        sx={{ 
-                          p: 2, 
-                          backgroundColor: 'background.default', 
-                          fontFamily: 'monospace', 
-                          fontSize: '0.85rem',
-                          flexGrow: 1
-                        }}
-                      >
-                        {currentUser.uid}
-                      </Paper>
-                      <Tooltip title="Sao chép UID">
-                        <IconButton 
-                          onClick={() => handleCopyToClipboard(currentUser.uid)}
-                          sx={{ ml: 1 }}
-                        >
-                          <ContentCopyIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            {userInfo && (
-              <Card elevation={2} sx={{ height: '100%' }}>
-                <CardHeader title="Thông tin backend" titleTypographyProps={{ variant: 'h6' }} />
-                <CardContent>
-                  <CodeBlock data={userInfo} height={300} />
-                </CardContent>
-              </Card>
-            )}
-          </Grid>
-        </Grid>
-      )}
+        {/* Profile Tab */}
+        <TabsContent value="profile" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Basic Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Thông tin cơ bản</CardTitle>
+                <CardDescription>Thông tin cá nhân từ Firebase và Backend</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <UserIcon className="h-4 w-4" />
+                    Tên hiển thị
+                  </div>
+                  <p className="font-medium">
+                    {userInfo?.firstName && userInfo?.lastName 
+                      ? `${userInfo.firstName} ${userInfo.lastName}`
+                      : currentUser.displayName || 'Chưa đặt tên'
+                    }
+                  </p>
+                </div>
 
-      {/* Security Information Tab */}
-      {tabValue === 1 && (
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Card elevation={2}>
-              <CardHeader 
-                title="Firebase ID Token" 
-                titleTypographyProps={{ variant: 'h6' }}
-              />
-              <CardContent>
-                <TokenDisplay 
-                  token={firebaseToken}
-                  initialVisibility={false}
-                  onCopy={handleCopyToClipboard}
-                />
-                
-                <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
-                  Thông tin token (decoded)
-                </Typography>
-                
-                {firebaseToken ? (
-                  <CodeBlock data={decodedToken} height={240} />
-                ) : (
-                  <Typography color="text.secondary">
-                    Đang tải token...
-                  </Typography>
+                <Separator />
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <EnvelopeIcon className="h-4 w-4" />
+                    Email
+                  </div>
+                  <p className="font-medium">{userInfo?.email || currentUser.email}</p>
+                  <Badge variant={currentUser.emailVerified ? "default" : "destructive"} className="text-xs">
+                    {currentUser.emailVerified ? "Đã xác thực" : "Chưa xác thực"}
+                  </Badge>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <DevicePhoneMobileIcon className="h-4 w-4" />
+                    Số điện thoại
+                  </div>
+                  <p className="font-medium">{userInfo?.phone || 'Chưa cập nhật'}</p>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <BuildingOfficeIcon className="h-4 w-4" />
+                    Tổ chức
+                  </div>
+                  <p className="font-medium">{userInfo?.organization || 'No organization'}</p>
+                </div>
+
+                {userInfo?.address && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPinIcon className="h-4 w-4" />
+                        Địa chỉ
+                      </div>
+                      <p className="font-medium">{userInfo.address}</p>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Card elevation={2}>
-              <CardHeader title="Thông tin đăng nhập" titleTypographyProps={{ variant: 'h6' }} />
-              <CardContent>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Chi tiết nhà cung cấp
-                </Typography>
-                <CodeBlock data={currentUser.providerData} height={120} />
-                
-                <Divider sx={{ my: 3 }} />
-                
-                <Box>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Phương thức đăng nhập
-                  </Typography>
-                  <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                    {currentUser.providerData.map((provider) => (
-                      <Chip 
-                        key={provider.providerId}
-                        label={provider.providerId.replace('.com', '')} 
-                        color="primary"
-                        variant="outlined"
-                      />
-                    ))}
-                  </Stack>
-                </Box>
-                
-                <Box>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Thời gian đăng nhập gần nhất
-                  </Typography>
-                  <Typography>
-                    {currentUser.metadata?.lastSignInTime ? new Date(currentUser.metadata.lastSignInTime).toLocaleString() : 'N/A'}
-                  </Typography>
-                </Box>
+
+            {/* Account Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Trạng thái tài khoản</CardTitle>
+                <CardDescription>Thông tin đăng nhập và hoạt động</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CalendarIcon className="h-4 w-4" />
+                    Lần đăng nhập cuối
+                  </div>
+                  <p className="font-medium">{formatDate(userInfo?.lastLoginAt)}</p>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <ComputerDesktopIcon className="h-4 w-4" />
+                    Thiết bị đăng nhập cuối
+                  </div>
+                  <p className="text-sm">
+                    {userInfo?.loginSessions?.[0]?.browser || 'N/A'} trên {userInfo?.loginSessions?.[0]?.os || 'N/A'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    IP: {userInfo?.lastLoginIp || 'N/A'}
+                  </p>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Tổng số lần đăng nhập</div>
+                  <p className="font-medium">{userInfo?.totalLogins || 0}</p>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Trạng thái</div>
+                  <Badge variant={userInfo?.isActive ? "default" : "destructive"}>
+                    {userInfo?.isActive ? "Hoạt động" : "Không hoạt động"}
+                  </Badge>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Ngày tạo tài khoản</div>
+                  <p className="font-medium">{formatDate(userInfo?.createdAt)}</p>
+                </div>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
-      )}
-      
+          </div>
+
+          {/* Full Backend Data */}
+          {userInfo && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Dữ liệu Backend đầy đủ</CardTitle>
+                <CardDescription>Toàn bộ thông tin người dùng từ backend API</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CodeBlock data={userInfo} height={400} />
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Security Tab */}
+        <TabsContent value="security" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Phương thức đăng nhập</CardTitle>
+                <CardDescription>Các nhà cung cấp xác thực bạn đã liên kết</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {currentUser.providerData.map((provider) => (
+                  <div key={provider.providerId} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{provider.providerId.replace('.com', '')}</p>
+                      <p className="text-sm text-muted-foreground">{provider.email}</p>
+                    </div>
+                    <Badge variant="outline">Đã liên kết</Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Phiên đăng nhập</CardTitle>
+                <CardDescription>Thông tin các phiên đăng nhập gần đây</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {userInfo?.loginSessions?.length > 0 ? (
+                  <div className="space-y-3">
+                    {userInfo.loginSessions.slice(0, 3).map((session, index) => (
+                      <div key={index} className="p-3 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium">{session.browser}</span>
+                          <Badge variant={session.isActive ? 'default' : 'secondary'} className="text-xs">
+                            {session.isActive ? 'Đang hoạt động' : 'Không hoạt động'}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p className="flex items-center gap-2">
+                            <ComputerDesktopIcon className="h-3 w-3" />
+                            {session.os} - {session.device}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <GlobeAltIcon className="h-3 w-3" />
+                            IP: {session.ip}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <CalendarIcon className="h-3 w-3" />
+                            Đăng nhập: {formatDate(session.loginAt)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-4">Không có thông tin phiên đăng nhập</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Dev Zone Tab */}
+        <TabsContent value="dev" className="space-y-6">
+          <Alert>
+            <ComputerDesktopIcon className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Developer Zone:</strong> Khu vực này chứa thông tin nhạy cảm chỉ dành cho developer. 
+              Không chia sẻ các token này với bất kỳ ai.
+            </AlertDescription>
+          </Alert>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Firebase Token */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Firebase ID Token</CardTitle>
+                <CardDescription>Token xác thực Firebase để gọi API</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <TokenDisplay 
+                  token={firebaseToken}
+                  show={showFirebaseToken}
+                  onToggle={() => setShowFirebaseToken(!showFirebaseToken)}
+                  label="Firebase Token"
+                />
+                
+                {firebaseToken && decodedToken && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h4 className="font-medium mb-2">Token Decoded:</h4>
+                      <CodeBlock data={decodedToken} height={200} />
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Backend Token */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Backend API Token</CardTitle>
+                <CardDescription>Token để truy cập trực tiếp backend API</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {backendToken ? (
+                  <TokenDisplay 
+                    token={backendToken}
+                    show={showBackendToken}
+                    onToggle={() => setShowBackendToken(!showBackendToken)}
+                    label="Backend Token"
+                  />
+                ) : (
+                  <Alert>
+                    <AlertDescription>
+                      Backend token không khả dụng. Hãy đăng xuất và đăng nhập lại.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* API Usage Examples */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Hướng dẫn sử dụng API</CardTitle>
+              <CardDescription>Ví dụ cách sử dụng token để gọi API</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">1. Lấy thông tin user hiện tại:</h4>
+                <CodeBlock 
+                  data={{
+                    method: "GET",
+                    url: "https://wd-mpc-server-production.up.railway.app/api/users/me",
+                    headers: {
+                      "Authorization": `Bearer ${backendToken || 'YOUR_BACKEND_TOKEN'}`,
+                      "Content-Type": "application/json"
+                    }
+                  }} 
+                  height={120}
+                />
+              </div>
+              
+              <div>
+                <h4 className="font-medium mb-2">2. Lấy danh sách cuộc thi:</h4>
+                <CodeBlock 
+                  data={{
+                    method: "GET",
+                    url: "https://wd-mpc-server-production.up.railway.app/api/contests",
+                    headers: {
+                      "Authorization": `Bearer ${backendToken || 'YOUR_BACKEND_TOKEN'}`,
+                      "Content-Type": "application/json"
+                    }
+                  }} 
+                  height={120}
+                />
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-2">3. Curl command example:</h4>
+                <div className="p-3 bg-muted rounded-md font-mono text-xs overflow-x-auto">
+                  {`curl -X GET "https://wd-mpc-server-production.up.railway.app/api/users/me" \\
+  -H "Authorization: Bearer ${backendToken || 'YOUR_BACKEND_TOKEN'}" \\
+  -H "Content-Type: application/json"`}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* User Identifiers */}
+          <Card>
+            <CardHeader>
+              <CardTitle>User Identifiers</CardTitle>
+              <CardDescription>Các ID định danh của user trong hệ thống</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Firebase UID:</label>
+                <div className="flex gap-2">
+                  <code className="flex-1 p-2 bg-muted rounded text-xs">{currentUser.uid}</code>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyToClipboard(currentUser.uid, 'Firebase UID')}
+                  >
+                    <CubeIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {userInfo?._id && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Backend User ID:</label>
+                  <div className="flex gap-2">
+                    <code className="flex-1 p-2 bg-muted rounded text-xs">{userInfo._id}</code>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCopyToClipboard(userInfo._id, 'Backend User ID')}
+                    >
+                      <CubeIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
       {/* Notification */}
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={4000}
-        onClose={notification.onClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={notification.onClose} 
-          severity={notification.severity}
-          sx={{ width: '100%' }}
-        >
-          {notification.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+      {notification.open && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Alert className={`${notification.severity === 'success' ? 'border-green-500' : 'border-red-500'}`}>
+            <AlertDescription>{notification.message}</AlertDescription>
+          </Alert>
+        </div>
+      )}
+    </div>
   );
 };
 
