@@ -14,14 +14,12 @@
   },
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "https://your-backend-api.com/api/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
     }
   ]
 }
