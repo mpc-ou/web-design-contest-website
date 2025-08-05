@@ -21,6 +21,18 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      external: [],
+      output: {
+        manualChunks: undefined,
+      }
+    },
+    commonjsOptions: {
+      include: [/node_modules/],
+    }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom']
   }
 })
