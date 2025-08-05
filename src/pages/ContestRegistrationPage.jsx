@@ -65,12 +65,19 @@ const ContestRegistrationPage = () => {
 
     try {
       const formData = {
-        ...data,
-        contestId: contestId
+        email: data.email,
+        phone: data.phone,
+        leaderName: data.leaderName,
+        studentId: data.studentId,
+        facebookLink: data.facebookLink,
+        contestId: contestId,
+        division: data.division,
+        teamName: data.teamName,
+        members: data.members.filter(member => member.fullName && member.email)
       };
 
-      await apiService.submitRegistration(formData);
-      setSuccess('Đăng ký thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.');
+      await apiService.submitRegistrationForm(formData);
+      setSuccess('Gửi form đăng ký thành công! Vui lòng chờ admin duyệt.');
       
       // Redirect after success
       setTimeout(() => {
@@ -307,7 +314,7 @@ const ContestRegistrationPage = () => {
 
           <div className="flex gap-4">
             <Button type="submit" disabled={submitting} className="flex-1">
-              {submitting ? 'Đang đăng ký...' : 'Đăng ký tham gia'}
+              {submitting ? 'Đang gửi form...' : 'Gửi form đăng ký'}
             </Button>
             <Button type="button" variant="outline" onClick={() => navigate(-1)}>
               Hủy

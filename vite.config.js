@@ -20,6 +20,7 @@ export default defineConfig({
       "@/components": resolve(__dirname, 'src/components'),
       "@/lib": resolve(__dirname, 'src/lib'),
       "@/utils": resolve(__dirname, 'src/lib/utils'),
+      "@/hooks": resolve(__dirname, 'src/lib/hooks'),
     },
   },
   esbuild: {

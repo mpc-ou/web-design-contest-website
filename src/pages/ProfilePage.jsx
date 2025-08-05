@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
@@ -32,6 +33,7 @@ import { decodeJwt } from '../utils/jwtUtils';
 
 const ProfilePage = () => {
   const { currentUser, userInfo, refreshUserInfo } = useAuth();
+  const navigate = useNavigate();
   const [firebaseToken, setFirebaseToken] = useState('');
   const [backendToken, setBackendToken] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -226,8 +228,26 @@ const ProfilePage = () => {
             {/* Basic Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Thông tin cơ bản</CardTitle>
-                <CardDescription>Thông tin cá nhân từ Firebase và Backend</CardDescription>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>Thông tin cơ bản</CardTitle>
+                    <CardDescription>Thông tin cá nhân từ Firebase và Backend</CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/profile/edit')}
+                  >
+                    Chỉnh sửa
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/profile/registrations')}
+                  >
+                    Form đăng ký
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">

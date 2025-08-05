@@ -6,9 +6,11 @@ import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
 import { CalendarIcon, UsersIcon, ClockIcon, TrophyIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../services/api';
+import MarkdownRenderer from '../components/common/MarkdownRenderer';
+import ImageGallery from '../components/common/ImageGallery';
 
 const ContestDetailPage = () => {
-  const { contestId } = useParams();
+  const { contestCode } = useParams();
   const [contest, setContest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -16,7 +18,7 @@ const ContestDetailPage = () => {
   useEffect(() => {
     const fetchContest = async () => {
       try {
-        const response = await apiService.getContest(contestId);
+        const response = await apiService.getContest(contestCode);
         setContest(response.data);
       } catch (error) {
         setError('Không thể tải thông tin cuộc thi');
@@ -26,10 +28,10 @@ const ContestDetailPage = () => {
       }
     };
 
-    if (contestId) {
+    if (contestCode) {
       fetchContest();
     }
-  }, [contestId]);
+  }, [contestCode]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -90,7 +92,10 @@ const ContestDetailPage = () => {
                 <Badge variant="outline">{contest.code}</Badge>
               </div>
               <h1 className="text-4xl font-bold mb-2">{contest.name}</h1>
-              <p className="text-xl opacity-90">{contest.description}</p>
+                              <MarkdownRenderer 
+                  content={contest.description} 
+                  className="text-xl opacity-90"
+                />
             </div>
           </div>
         </div>
@@ -194,6 +199,26 @@ const ContestDetailPage = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Image Gallery */}
+          {contest.images && contest.images.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Hình ảnh cuộc thi</CardTitle>
+                <CardDescription>
+                  Khám phá những hình ảnh về cuộc thi
+                </CardDescription>
+              </CardHeader>
+              <CardContent
+                className="w-full"
+              >
+                <ImageGallery 
+                  images={contest.images} 
+                  title={`Hình ảnh ${contest.name}`}
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}
