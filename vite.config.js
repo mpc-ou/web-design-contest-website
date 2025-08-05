@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: '/',
   server: {
-    allowedHosts: ['.konnn04.live', 'localhost'],
+    allowedHosts: ['.konnn04.live', 'localhost', '.vercel.app'],
     port: 3000,
     host: true,
   },
@@ -28,15 +28,19 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    assetsDir: 'assets',
     sourcemap: false,
     target: 'esnext',
     rollupOptions: {
       external: [],
       output: {
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
           utils: ['axios', 'clsx', 'tailwind-merge']
         },
       }
