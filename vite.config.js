@@ -16,16 +16,29 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": resolve(__dirname, "./src"),
+      "@": resolve(__dirname, 'src'),
+      "@/components": resolve(__dirname, 'src/components'),
+      "@/lib": resolve(__dirname, 'src/lib'),
+      "@/utils": resolve(__dirname, 'src/lib/utils'),
     },
+  },
+  esbuild: {
+    target: 'esnext',
+    platform: 'neutral',
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
+    target: 'esnext',
     rollupOptions: {
       external: [],
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          utils: ['axios', 'clsx', 'tailwind-merge']
+        },
       }
     },
     commonjsOptions: {
@@ -33,6 +46,6 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['react', 'react-dom']
+    include: ['react', 'react-dom', 'react-router-dom']
   }
 })
