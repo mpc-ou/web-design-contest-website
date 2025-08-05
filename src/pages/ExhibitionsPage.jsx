@@ -59,45 +59,7 @@ const ExhibitionsPage = () => {
 
     } catch (error) {
       console.error('Error fetching exhibitions:', error);
-      
-      // Fallback data
-      if (reset) {
-        setExhibitions([
-          {
-            _id: '1',
-            title: "Web Design Contest 2023 - Triển lãm tác phẩm",
-            description: "Triển lãm các tác phẩm xuất sắc từ cuộc thi thiết kế web 2023 với sự tham gia của hơn 100 thí sinh từ các trường đại học trên toàn quốc.",
-            image: "/img/contest-bg.jpg",
-            contestCode: "WDC2023",
-            startDate: "2023-11-01T00:00:00.000Z",
-            endDate: "2023-11-30T23:59:59.999Z",
-            status: "completed",
-            totalWorks: 25
-          },
-          {
-            _id: '2',
-            title: "Showcase Frontend Technologies",
-            description: "Trưng bày các công nghệ frontend hiện đại qua các dự án thực tế được phát triển bởi sinh viên.",
-            image: "/img/contest-bg.jpg",
-            contestCode: "WDC2022",
-            startDate: "2022-12-01T00:00:00.000Z",
-            endDate: "2022-12-31T23:59:59.999Z",
-            status: "completed",
-            totalWorks: 18
-          },
-          {
-            _id: '3',
-            title: "UI/UX Design Excellence",
-            description: "Những thiết kế UI/UX ấn tượng từ sinh viên khoa CNTT với nhiều ý tưởng sáng tạo.",
-            image: "/img/contest-bg.jpg",
-            contestCode: "WDC2021",
-            startDate: "2021-10-15T00:00:00.000Z",
-            endDate: "2021-11-15T23:59:59.999Z",
-            status: "completed",
-            totalWorks: 30
-          }
-        ]);
-      }
+      return []
     } finally {
       setLoading(false);
       setLoadingMore(false);
