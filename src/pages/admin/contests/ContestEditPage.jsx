@@ -289,21 +289,6 @@ const ContestEditPage = () => {
               placeholder="Web Design, Mobile App, ..."
             />
 
-            <FormField
-              label="Trạng thái"
-              name="status"
-              type="select"
-              value={formData.status}
-              onChange={handleChange}
-              options={[
-                { value: 'draft', label: 'Nháp' },
-                { value: 'upcoming', label: 'Sắp diễn ra' },
-                { value: 'registration', label: 'Đang mở đăng ký' },
-                { value: 'ongoing', label: 'Đang diễn ra' },
-                { value: 'completed', label: 'Hoàn thành' },
-              ]}
-            />
-
             <div className="md:col-span-2">
               <FormField
                 label="Mô tả"

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react';
 import { Plus, Download, Eye, Edit, Trash2, Play, Pause, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

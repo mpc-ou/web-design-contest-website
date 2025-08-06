@@ -1,19 +1,10 @@
-import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Separator } from '@/components/ui/separator';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
 

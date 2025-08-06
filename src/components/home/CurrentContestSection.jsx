@@ -37,7 +37,7 @@ const CurrentContestSection = ({ contest }) => {
               <img
                 src={contest.thumbnail || "/img/contest-bg.jpg"}
                 alt={contest.name}
-                className="w-full h-64 md:h-full object-cover"
+                className="w-full h-64 md:h-full object-cover aspect-video"
               />
             </div>
             <div className="md:w-1/2 p-8">

@@ -185,9 +185,16 @@ const Navbar = () => {
               
               {currentUser ? (
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm hidden sm:block">
-                    {userInfo?.displayName || currentUser.email}
-                  </span>
+                  <Link to="/profile" className="hidden sm:flex items-center space-x-2">
+                    <img 
+                      src={userInfo?.avatar || '/img/default-avatar.png'} 
+                      alt={userInfo?.lastName || currentUser.email} 
+                      className="h-8 w-8 rounded-full"
+                    />
+                    <span className="text-sm hidden sm:block">
+                      {userInfo?.lastName || currentUser.email}
+                    </span>
+                  </Link>
                   <Button variant="outline" size="sm" onClick={handleLogout}>
                     Đăng xuất
                   </Button>

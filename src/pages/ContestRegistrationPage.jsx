@@ -13,7 +13,7 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../services/api';
 
 const ContestRegistrationPage = () => {
-  const { contestId } = useParams();
+  const { contestCode } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [contest, setContest] = useState(null);
@@ -43,7 +43,7 @@ const ContestRegistrationPage = () => {
   useEffect(() => {
     const fetchContest = async () => {
       try {
-        const response = await apiService.getContest(contestId);
+        const response = await apiService.getContest(contestCode);
         setContest(response.data);
       } catch (error) {
         setError('Không thể tải thông tin cuộc thi');
@@ -53,15 +53,16 @@ const ContestRegistrationPage = () => {
       }
     };
 
-    if (contestId) {
+    if (contestCode) {
       fetchContest();
     }
-  }, [contestId]);
+  }, [contestCode]);
 
   const onSubmit = async (data) => {
     setSubmitting(true);
     setError('');
     setSuccess('');
+    const contestId = contest?._id || contestCode;
 
     try {
       const formData = {
@@ -81,7 +82,7 @@ const ContestRegistrationPage = () => {
       
       // Redirect after success
       setTimeout(() => {
-        navigate(`/contests/${contestId}`);
+        navigate(`/contests/${contestCode}`);
       }, 2000);
     } catch (error) {
       setError(error.response?.data?.error || 'Đăng ký thất bại. Vui lòng thử lại.');

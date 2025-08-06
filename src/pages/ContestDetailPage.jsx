@@ -1,19 +1,31 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Separator } from '../components/ui/separator';
-import { CalendarIcon, UsersIcon, ClockIcon, TrophyIcon } from '@heroicons/react/24/outline';
-import { apiService } from '../services/api';
-import MarkdownRenderer from '../components/common/MarkdownRenderer';
-import ImageGallery from '../components/common/ImageGallery';
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
+import {
+  CalendarIcon,
+  UsersIcon,
+  ClockIcon,
+  TrophyIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/24/outline";
+import { apiService } from "../services/api";
+import MarkdownRenderer from "../components/common/MarkdownRenderer";
+import ImageGallery from "../components/common/ImageGallery";
 
 const ContestDetailPage = () => {
   const { contestCode } = useParams();
   const [contest, setContest] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchContest = async () => {
@@ -21,8 +33,8 @@ const ContestDetailPage = () => {
         const response = await apiService.getContest(contestCode);
         setContest(response.data);
       } catch (error) {
-        setError('Không thể tải thông tin cuộc thi');
-        console.error('Error fetching contest:', error);
+        setError("Không thể tải thông tin cuộc thi");
+        console.error("Error fetching contest:", error);
       } finally {
         setLoading(false);
       }
@@ -34,10 +46,10 @@ const ContestDetailPage = () => {
   }, [contestCode]);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -64,7 +76,9 @@ const ContestDetailPage = () => {
       <div className="container py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive">Lỗi</h1>
-          <p className="text-muted-foreground mt-2">{error || 'Không tìm thấy cuộc thi'}</p>
+          <p className="text-muted-foreground mt-2">
+            {error || "Không tìm thấy cuộc thi"}
+          </p>
         </div>
       </div>
     );
@@ -80,22 +94,24 @@ const ContestDetailPage = () => {
             alt={contest.name}
             className="w-full h-full object-cover"
             onError={(e) => {
-              e.target.src = '/img/placeholder-contest.jpg';
+              e.target.src = "/img/placeholder-contest.jpg";
             }}
           />
           <div className="absolute inset-0 bg-black/50 flex items-end">
             <div className="p-8 text-white">
               <div className="flex items-center gap-2 mb-4">
-                <Badge variant={isRegistrationOpen(contest) ? "secondary" : "outline"}>
-                  {isRegistrationOpen(contest) ? 'Đang mở đăng ký' : 'Đã đóng đăng ký'}
+                <Badge
+                  variant={
+                    isRegistrationOpen(contest) ? "secondary" : "outline"
+                  }
+                >
+                  {isRegistrationOpen(contest)
+                    ? "Đang mở đăng ký"
+                    : "Đã đóng đăng ký"}
                 </Badge>
                 <Badge variant="outline">{contest.code}</Badge>
               </div>
               <h1 className="text-4xl font-bold mb-2">{contest.name}</h1>
-                              <MarkdownRenderer 
-                  content={contest.description} 
-                  className="text-xl opacity-90"
-                />
             </div>
           </div>
         </div>
@@ -104,6 +120,24 @@ const ContestDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Description */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <QuestionMarkCircleIcon className="h-5 w-5" />
+                Mô tả cuộc thi
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <MarkdownRenderer
+                  content={contest.description}
+                  className="text-xl opacity-90"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Timeline */}
           <Card>
             <CardHeader>
@@ -151,48 +185,25 @@ const ContestDetailPage = () => {
                   <div key={index} className="p-4 border rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold">{round.name}</h3>
-                      <Badge variant={round.type === 'final' ? 'default' : 'secondary'}>
-                        {round.type === 'final' ? 'Chung kết' : 'Vòng loại'}
+                      <Badge
+                        variant={
+                          round.type === "final" ? "default" : "secondary"
+                        }
+                      >
+                        {round.type === "final" ? "Chung kết" : "Vòng loại"}
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <div className="flex items-center gap-2">
                         <CalendarIcon className="h-4 w-4" />
-                        <span>{formatDate(round.startDate)} - {formatDate(round.endDate)}</span>
+                        <span>
+                          {formatDate(round.startDate)} -{" "}
+                          {formatDate(round.endDate)}
+                        </span>
                       </div>
                       {round.description && (
                         <p className="mt-2">{round.description}</p>
                       )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Divisions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UsersIcon className="h-5 w-5" />
-                Bảng thi
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {contest.divisions.map((division, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
-                    <h3 className="font-semibold mb-2">{division.name}</h3>
-                    <p className="text-muted-foreground mb-3">{division.description}</p>
-                    <div className="flex gap-4 text-sm">
-                      <div className="flex items-center gap-1">
-                        <UsersIcon className="h-4 w-4" />
-                        <span>Tối đa {division.maxMembers} thành viên/đội</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <TrophyIcon className="h-4 w-4" />
-                        <span>Tối đa {division.maxTeams} đội</span>
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -209,11 +220,9 @@ const ContestDetailPage = () => {
                   Khám phá những hình ảnh về cuộc thi
                 </CardDescription>
               </CardHeader>
-              <CardContent
-                className="w-full"
-              >
-                <ImageGallery 
-                  images={contest.images} 
+              <CardContent className="w-full">
+                <ImageGallery
+                  images={contest.images}
                   title={`Hình ảnh ${contest.name}`}
                 />
               </CardContent>
@@ -228,10 +237,9 @@ const ContestDetailPage = () => {
             <CardHeader>
               <CardTitle>Đăng ký tham gia</CardTitle>
               <CardDescription>
-                {isRegistrationOpen(contest) 
-                  ? 'Cuộc thi đang mở đăng ký' 
-                  : 'Đăng ký đã đóng'
-                }
+                {isRegistrationOpen(contest)
+                  ? "Cuộc thi đang mở đăng ký"
+                  : "Đăng ký đã đóng"}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -258,7 +266,13 @@ const ContestDetailPage = () => {
               <div className="flex items-center gap-2">
                 <ClockIcon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  Thời gian: {Math.ceil((new Date(contest.timeline.contestEnd) - new Date(contest.timeline.contestStart)) / (1000 * 60 * 60 * 24))} ngày
+                  Thời gian:{" "}
+                  {Math.ceil(
+                    (new Date(contest.timeline.contestEnd) -
+                      new Date(contest.timeline.contestStart)) /
+                      (1000 * 60 * 60 * 24)
+                  )}{" "}
+                  ngày
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -267,7 +281,41 @@ const ContestDetailPage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{contest.divisions.length} bảng thi</span>
+                <span className="text-sm">
+                  {contest.divisions.length} bảng thi
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Divisions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UsersIcon className="h-5 w-5" />
+                Bảng thi
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {contest.divisions.map((division, index) => (
+                  <div key={index} className="p-4 border rounded-lg">
+                    <h3 className="font-semibold mb-2">{division.name}</h3>
+                    <p className="text-muted-foreground mb-3">
+                      {division.description}
+                    </p>
+                    <div className="flex gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <UsersIcon className="h-4 w-4" />
+                        <span>Tối đa {division.maxMembers} thành viên/đội</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <TrophyIcon className="h-4 w-4" />
+                        <span>Tối đa {division.maxTeams} đội</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>

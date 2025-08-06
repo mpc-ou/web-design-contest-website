@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
       const loginData = {
         uid: user.uid,
         email: user.email,
-        name: user.displayName || user.email
+        name: user.displayName || user.email,
       };
       
       const response = await apiService.login(loginData);

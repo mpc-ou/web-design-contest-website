@@ -37,14 +37,20 @@ const ContestCreatePage = () => {
     ],
     divisions: [
       {
-        name: 'Sinh viên',
-        description: 'Dành cho sinh viên đại học',
+        name: 'Bảng A',
+        description: 'Không dùng framework',
+        maxTeams: '',
+        maxMembers: 3,
+        isActive: true,
+      },
+      {
+        name: 'Bảng B',
+        description: 'Dùng framework',
         maxTeams: '',
         maxMembers: 3,
         isActive: true,
       }
     ],
-    status: 'draft',
     isActive: true,
   });
   const [errors, setErrors] = useState({});
@@ -262,60 +268,92 @@ const ContestCreatePage = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      toast.error('Vui lòng kiểm tra lại thông tin');
+      toast.error('Vui lòng kiểm tra lại thông tin nhập vào', {
+        description: 'Có một số trường bắt buộc chưa được điền đầy đủ'
+      });
       return;
     }
 
     try {
       setLoading(true);
       
-      // Create FormData for file upload
+      // Hiển thị toast loading
+      const loadingToast = toast.loading('Đang tạo cuộc thi...', {
+        description: 'Vui lòng đợi trong giây lát'
+      });
+
       const formDataToSend = new FormData();
       
-      // Add basic fields
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('code', formData.code);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('status', formData.status);
-      formDataToSend.append('isActive', formData.isActive);
+      // Add form fields
+      Object.keys(formData).forEach(key => {
+        if (key === 'thumbnail' && formData[key]) {
+          formDataToSend.append('thumbnail', formData[key]);
+        } else if (key === 'images' || key === 'timeline' || key === 'rounds' || key === 'divisions') {
+          // Skip these, will be handled separately
+        } else if (formData[key] !== null && formData[key] !== undefined) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
       
-      // Add thumbnail file if exists
-      if (formData.thumbnail && typeof formData.thumbnail === 'object') {
-        formDataToSend.append('thumbnail', formData.thumbnail);
-      }
-      
-      // Add images files if exist
+      // Add images
       if (formData.images && formData.images.length > 0) {
-        formData.images.forEach((image, index) => {
+        formData.images.forEach((image) => {
           formDataToSend.append(`images`, image);
         });
       }
       
-      // Add timeline as JSON
       formDataToSend.append('timeline', JSON.stringify(formData.timeline));
       
-      // Add rounds as JSON
       const cleanRounds = formData.rounds.map(round => ({
         ...round,
         order: parseInt(round.order),
       }));
       formDataToSend.append('rounds', JSON.stringify(cleanRounds));
       
-      // Add divisions as JSON
       const cleanDivisions = formData.divisions.map(div => ({
         ...div,
-        maxTeams: div.maxTeams ? parseInt(div.maxTeams) : null,
-        maxMembers: div.maxMembers ? parseInt(div.maxMembers) : null,
+        maxTeams: div.maxTeams ? parseInt(div.maxTeams) : 10,
+        maxMembers: div.maxMembers ? parseInt(div.maxMembers) : 3,
       }));
       formDataToSend.append('divisions', JSON.stringify(cleanDivisions));
 
-      await apiService.createAdminContest(formDataToSend);
-      toast.success('Tạo cuộc thi thành công');
-      navigate('/admin/contests');
+      const response = await apiService.createAdminContest(formDataToSend);
+      
+      if (!response || !response.data) {
+        throw new Error('Không nhận được phản hồi hợp lệ từ máy chủ');
+      }
+
+      toast.dismiss(loadingToast);
+      
+      // Success toast với thông tin chi tiết
+      toast.success('🎉 Tạo cuộc thi thành công!', {
+        description: `Cuộc thi "${formData.name}" đã được tạo với mã ${formData.code}`,
+        action: {
+          label: 'Xem chi tiết',
+          onClick: () => navigate(`/admin/contests/${formData.code}`)
+        },
+        duration: 6000,
+      });
+      
+      // Delay redirect để user có thể thấy toast
+      setTimeout(() => {
+        navigate('/admin/contests');
+      }, 1000);
+      
     } catch (error) {
       console.error('Error creating contest:', error);
-      toast.error('Có lỗi khi tạo cuộc thi');
+      
+      const errorMessage = error.response?.data?.error || 'Có lỗi khi tạo cuộc thi';
+      const errorCode = error.response?.status;
+      
+      toast.error('❌ Không thể tạo cuộc thi', {
+        description: errorCode ? `${errorMessage} (Mã lỗi: ${errorCode})` : errorMessage,
+        action: {
+          label: 'Thử lại',
+          onClick: () => handleSubmit(e)
+        },
+        duration: 6000,
+      });
     } finally {
       setLoading(false);
     }
@@ -381,21 +419,6 @@ const ContestCreatePage = () => {
               value={formData.category}
               onChange={handleChange}
               placeholder="Web Design, Mobile App, ..."
-            />
-
-            <FormField
-              label="Trạng thái"
-              name="status"
-              type="select"
-              value={formData.status}
-              onChange={handleChange}
-              options={[
-                { value: 'draft', label: 'Nháp' },
-                { value: 'upcoming', label: 'Sắp diễn ra' },
-                { value: 'registration', label: 'Đang mở đăng ký' },
-                { value: 'ongoing', label: 'Đang diễn ra' },
-                { value: 'completed', label: 'Hoàn thành' },
-              ]}
             />
 
             <div className="md:col-span-2">

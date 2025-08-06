@@ -83,13 +83,14 @@ const AdminHeader = () => {
       <div className="ml-auto flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <Button variant="ghost" size="icon" className="relative">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={userInfo?.avatar} alt={userInfo?.name} />
-                <AvatarFallback>
-                  {userInfo?.name?.charAt(0).toUpperCase()}
-                </AvatarFallback>
+                <AvatarImage src={userInfo?.avatar || '/img/default-avatar.png'} />
+                <AvatarFallback>{userInfo?.name?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
+              {userInfo?.unreadNotifications > 0 && (
+                <span className="absolute top-0 right-0 inline-flex h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>

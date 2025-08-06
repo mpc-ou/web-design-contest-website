@@ -18,7 +18,7 @@ const ContestsGrid = ({ contests }) => {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           {contests.map((contest) => (
             <Card key={contest._id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="aspect-video relative">
+              <div className="aspect-video relative overflow-hidden">
                 <img
                   src={contest.thumbnail || "/img/contest-bg.jpg"}
                   alt={contest.name}
