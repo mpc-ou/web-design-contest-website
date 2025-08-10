@@ -99,19 +99,21 @@ const ExhibitionDetailPage = () => {
         actions={pageActions}
       />
 
-      <DetailCard
-        title="Thông tin triển lãm"
-        icon={Image}
-      >
+      <DetailCard title="Thông tin triển lãm" icon={Image}>
         <div className="space-y-1">
           <DetailCard.Field label="Tiêu đề" value={exhibition.title} />
           <DetailCard.Field label="Mô tả" value={exhibition.description} />
-          <DetailCard.Field label="Demo URL" value={exhibition.demoUrl} type="url" />
-          <DetailCard.Field label="Công nghệ" value={exhibition.technologies} type="tags" />
+          <DetailCard.Field label="Công khai" value={exhibition.isPublic ? 'Có' : 'Không'} />
+          <DetailCard.Field label="Cuộc thi" value={exhibition.contest?.name || exhibition.contest?.code} />
+          <DetailCard.Field label="Đơn vị tổ chức" value={exhibition.organizer} />
+          <DetailCard.Field label="Địa điểm" value={exhibition.location} />
+          <DetailCard.Field label="Ngày bắt đầu" value={exhibition.startDate} type="datetime" />
+          <DetailCard.Field label="Ngày kết thúc" value={exhibition.endDate} type="datetime" />
           <DetailCard.Field label="Thẻ" value={exhibition.tags} type="tags" />
-          <DetailCard.Field label="Đội thi" value={exhibition.team?.teamName} />
-          <DetailCard.Field label="Cuộc thi" value={exhibition.contest?.name} />
+          <DetailCard.Field label="Thumbnail" value={exhibition.thumbnail} type="url" />
+          <DetailCard.Field label="Banner" value={exhibition.banner} type="url" />
           <DetailCard.Field label="Ngày tạo" value={exhibition.createdAt} type="datetime" />
+          <DetailCard.Field label="Cập nhật lúc" value={exhibition.updatedAt} type="datetime" />
         </div>
       </DetailCard>
     </div>

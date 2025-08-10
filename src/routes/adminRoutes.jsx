@@ -20,7 +20,6 @@ import ReportsPage from '../pages/admin/ReportsPage';
 
 // Users Management
 import AdminUserDetailPage from '../pages/admin/users/UserDetailPage';
-import AdminUserCreatePage from '../pages/admin/users/UserCreatePage';
 import AdminUserEditPage from '../pages/admin/users/UserEditPage';
 
 // Contests Management
@@ -75,7 +74,7 @@ export const getAdminRoutes = () => (
     
       {/* Users Management */}
       <Route path="users" element={<UsersPage />} />
-      <Route path="users/create" element={<AdminUserCreatePage />} />
+      {/* Removed user create route - third-party login only */}
       <Route path="users/:id" element={<AdminUserDetailPage />} />
       <Route path="users/:id/edit" element={<AdminUserEditPage />} />
       

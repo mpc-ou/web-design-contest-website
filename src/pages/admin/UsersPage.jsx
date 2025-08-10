@@ -18,9 +18,14 @@ const UsersPage = () => {
 
   const columns = [
     {
-      key: 'name',
+      key: 'fullName',
       title: 'Họ và tên',
-      className: 'font-medium',
+      type: 'custom',
+      render: (value, row) => {
+        return (
+          <p className='font-medium'>{row.fullName}</p>
+        );
+      },
     },
     {
       key: 'email',
@@ -194,14 +199,7 @@ const UsersPage = () => {
     fetchUsers(page, searchTerm, filterRole);
   };
 
-  const pageActions = [
-    {
-      label: 'Thêm người dùng',
-      variant: 'default',
-      icon: Plus,
-      onClick: () => navigate('/admin/users/create'),
-    },
-  ];
+  const pageActions = [];
 
   const filterOptions = {
     options: [

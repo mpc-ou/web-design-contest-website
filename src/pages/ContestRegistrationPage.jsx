@@ -11,6 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../services/api';
+import { toast } from 'sonner';
+import { Checkbox } from '../components/ui/checkbox';
+import ContestTermsModal from '../components/common/ContestTermsModal';
 
 const ContestRegistrationPage = () => {
   const { contestCode } = useParams();
@@ -21,6 +24,9 @@ const ContestRegistrationPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [hasOpenedTerms, setHasOpenedTerms] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
 
   const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
@@ -45,9 +51,15 @@ const ContestRegistrationPage = () => {
       try {
         const response = await apiService.getContest(contestCode);
         setContest(response.data);
+        if (response.data?.hadRegistered) {
+          toast.info('Bạn đã đăng ký cuộc thi này');
+          navigate(`/contests/${contestCode}`);
+          return;
+        }
       } catch (error) {
         setError('Không thể tải thông tin cuộc thi');
         console.error('Error fetching contest:', error);
+        toast.error('Không thể tải thông tin cuộc thi');
       } finally {
         setLoading(false);
       }
@@ -65,6 +77,11 @@ const ContestRegistrationPage = () => {
     const contestId = contest?._id || contestCode;
 
     try {
+      if (!agreeTerms) {
+        setError('Bạn cần đồng ý điều khoản cuộc thi trước khi gửi.');
+        setSubmitting(false);
+        return;
+      }
       const formData = {
         email: data.email,
         phone: data.phone,
@@ -79,13 +96,16 @@ const ContestRegistrationPage = () => {
 
       await apiService.submitRegistrationForm(formData);
       setSuccess('Gửi form đăng ký thành công! Vui lòng chờ admin duyệt.');
+      toast.success('Đã gửi đăng ký thành công');
       
       // Redirect after success
       setTimeout(() => {
         navigate(`/contests/${contestCode}`);
       }, 2000);
     } catch (error) {
-      setError(error.response?.data?.error || 'Đăng ký thất bại. Vui lòng thử lại.');
+      const msg = error.response?.data?.error || 'Đăng ký thất bại. Vui lòng thử lại.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -243,6 +263,7 @@ const ContestRegistrationPage = () => {
             </CardContent>
           </Card>
 
+          
           {/* Team Members */}
           <Card>
             <CardHeader>
@@ -313,8 +334,34 @@ const ContestRegistrationPage = () => {
             </CardContent>
           </Card>
 
+          {/* Terms & Agreement */}
+          <Card>
+          <CardHeader>
+            <CardTitle>Điều khoản cuộc thi</CardTitle>
+            <CardDescription>
+              Hãy đọc và đồng ý trước khi gửi đăng ký.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="agreeTerms"
+                checked={agreeTerms}
+                onCheckedChange={(val) => setAgreeTerms(!!val)}
+                disabled={!hasOpenedTerms}
+              />
+              <Label htmlFor="agreeTerms" className={!hasOpenedTerms ? 'text-muted-foreground' : ''}>
+                Tôi đồng ý với <button type="button" className="font-semibold underline" onClick={() => setTermsModalOpen(true)}>điều khoản của cuộc thi</button> đề ra
+              </Label>
+            </div>
+            {!hasOpenedTerms && (
+              <p className="text-sm text-muted-foreground">Bấm vào <span className="font-semibold">điều khoản của cuộc thi</span> để xem, sau đó bạn có thể tick đồng ý.</p>
+            )}
+          </CardContent>
+          </Card>
+
           <div className="flex gap-4">
-            <Button type="submit" disabled={submitting} className="flex-1">
+            <Button type="submit" disabled={submitting || !agreeTerms} className="flex-1">
               {submitting ? 'Đang gửi form...' : 'Gửi form đăng ký'}
             </Button>
             <Button type="button" variant="outline" onClick={() => navigate(-1)}>
@@ -322,6 +369,14 @@ const ContestRegistrationPage = () => {
             </Button>
           </div>
         </form>
+
+        <ContestTermsModal
+          open={termsModalOpen}
+          onOpenChange={(open) => {
+            setTermsModalOpen(open);
+            if (!open) setHasOpenedTerms(true);
+          }}
+        />
       </div>
     </div>
   );

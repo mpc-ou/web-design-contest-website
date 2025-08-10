@@ -22,14 +22,13 @@ const AdminExhibitionsPage = () => {
       className: 'font-medium min-w-[200px]',
     },
     {
-      key: 'teamInfo',
-      title: 'Đội thi',
+      key: 'isPublic',
+      title: 'Công khai',
       type: 'custom',
-      render: (value, item) => (
-        <div className="space-y-1">
-          <div className="font-medium">{item.team?.teamName}</div>
-          <div className="text-xs text-muted-foreground">{item.team?.division}</div>
-        </div>
+      render: (value) => (
+        <Badge variant={value ? 'default' : 'outline'} className="text-xs">
+          {value ? 'Có' : 'Không'}
+        </Badge>
       ),
     },
     {
@@ -44,43 +43,25 @@ const AdminExhibitionsPage = () => {
       ),
     },
     {
-      key: 'technologies',
-      title: 'Công nghệ',
+      key: 'tags',
+      title: 'Thẻ',
       type: 'custom',
       render: (value) => (
         <div className="flex flex-wrap gap-1">
-          {value?.slice(0, 3).map((tech, index) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {tech}
+          {value?.slice(0, 3).map((tag, index) => (
+            <Badge key={index} variant="secondary" className="text-xs">
+              {tag}
             </Badge>
           ))}
           {value?.length > 3 && (
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="outline" className="text-xs">
               +{value.length - 3}
             </Badge>
           )}
         </div>
       ),
     },
-    {
-      key: 'tags',
-      title: 'Thẻ',
-      type: 'custom',
-      render: (value) => (
-        <div className="flex flex-wrap gap-1">
-          {value?.slice(0, 2).map((tag, index) => (
-            <Badge key={index} variant="secondary" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
-          {value?.length > 2 && (
-            <Badge variant="outline" className="text-xs">
-              +{value.length - 2}
-            </Badge>
-          )}
-        </div>
-      ),
-    },
+    // keep only one tags column; removed technologies
     {
       key: 'demoUrl',
       title: 'Demo',

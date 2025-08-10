@@ -186,3 +186,82 @@ main {
 .animate-zoom-pulse {
   animation: zoom-pulse 1.5s ease-in-out infinite;
 }
+
+/* Custom animations for carousel */
+@keyframes carousel-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes carousel-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes carousel-slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.carousel-item-enter {
+  animation: carousel-fade-in 0.5s ease-out;
+}
+
+.carousel-item-slide-right {
+  animation: carousel-slide-in-right 0.5s ease-out;
+}
+
+.carousel-item-slide-left {
+  animation: carousel-slide-in-left 0.5s ease-out;
+}
+
+/* Progress bar animation */
+@keyframes progress-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.carousel-progress {
+  animation: progress-fill var(--duration) linear;
+}
+
+/* Smooth thumbnail scroll */
+.carousel-thumbnails {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground)) transparent;
+}
+
+.carousel-thumbnails::-webkit-scrollbar {
+  height: 4px;
+}
+
+.carousel-thumbnails::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.carousel-thumbnails::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 2px;
+}
+
+.carousel-thumbnails::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground));
+}

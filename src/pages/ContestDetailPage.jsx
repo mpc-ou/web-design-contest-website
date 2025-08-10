@@ -17,7 +17,9 @@ import {
   TrophyIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
+import FacebookIcon from "../components/icons/FacebookIcon";
 import { apiService } from "../services/api";
+import { toast } from 'sonner';
 import MarkdownRenderer from "../components/common/MarkdownRenderer";
 import ImageGallery from "../components/common/ImageGallery";
 
@@ -35,6 +37,7 @@ const ContestDetailPage = () => {
       } catch (error) {
         setError("Không thể tải thông tin cuộc thi");
         console.error("Error fetching contest:", error);
+        toast.error('Không thể tải thông tin cuộc thi');
       } finally {
         setLoading(false);
       }
@@ -53,12 +56,30 @@ const ContestDetailPage = () => {
     });
   };
 
-  const isRegistrationOpen = (contest) => {
-    if (!contest?.timeline) return false;
+  const registrationOpenStatus = (contest) => {
+    if (!contest?.timeline) return {
+      status: 'closed',
+      message: 'Đã đóng đăng ký'
+    };
     const now = new Date();
     const regStart = new Date(contest.timeline.registrationStart);
     const regEnd = new Date(contest.timeline.registrationEnd);
-    return now >= regStart && now <= regEnd;
+    if (now < regStart) {
+      return {
+        status: 'upcoming',
+        message: 'Sắp mở đăng ký'
+      }
+    }
+    if (now >= regStart && now <= regEnd) {
+      return {
+        status: 'open',
+        message: 'Đang mở đăng ký'
+      }
+    }
+    return {
+      status: 'closed',
+      message: 'Đã đóng đăng ký'
+    }
   };
 
   if (loading) {
@@ -102,12 +123,10 @@ const ContestDetailPage = () => {
               <div className="flex items-center gap-2 mb-4">
                 <Badge
                   variant={
-                    isRegistrationOpen(contest) ? "secondary" : "outline"
+                    registrationOpenStatus(contest).status === 'open' ? "secondary" : "outline"
                   }
                 >
-                  {isRegistrationOpen(contest)
-                    ? "Đang mở đăng ký"
-                    : "Đã đóng đăng ký"}
+                  {registrationOpenStatus(contest).message}
                 </Badge>
                 <Badge variant="outline">{contest.code}</Badge>
               </div>
@@ -237,21 +256,25 @@ const ContestDetailPage = () => {
             <CardHeader>
               <CardTitle>Đăng ký tham gia</CardTitle>
               <CardDescription>
-                {isRegistrationOpen(contest)
-                  ? "Cuộc thi đang mở đăng ký"
-                  : "Đăng ký đã đóng"}
+                {registrationOpenStatus(contest).message}
               </CardDescription>
-            </CardHeader>
+            </CardHeader>   
             <CardContent>
-              {isRegistrationOpen(contest) ? (
-                <Button asChild className="w-full">
-                  <Link to={`/contests/${contest.code}/register`}>
-                    Đăng ký ngay
-                  </Link>
-                </Button>
+              {registrationOpenStatus(contest).status === 'open' ? (
+                contest.hadRegistered ? (
+                  <Button disabled className="w-full">
+                    Đã đăng ký
+                  </Button>
+                ) : (
+                  <Button asChild className="w-full">
+                    <Link to={`/contests/${contest.code}/register`}>
+                      Đăng ký ngay
+                    </Link>
+                  </Button>
+                )
               ) : (
                 <Button disabled className="w-full">
-                  Đã đóng đăng ký
+                  {registrationOpenStatus(contest).message}
                 </Button>
               )}
             </CardContent>
@@ -327,15 +350,9 @@ const ContestDetailPage = () => {
             </CardHeader>
             <CardContent>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1">
-                  Facebook
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  Twitter
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  Link
-                </Button>
+                <Link to={`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`} target="_blank">
+                  <FacebookIcon className="h-4 w-4" />
+                </Link>
               </div>
             </CardContent>
           </Card>

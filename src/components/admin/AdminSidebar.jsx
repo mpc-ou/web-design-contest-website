@@ -135,7 +135,7 @@ const AdminSidebar = () => {
   const location = useLocation();
 
   return (
-    <Sidebar>
+    <Sidebar >
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 p-4">
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -150,7 +150,7 @@ const AdminSidebar = () => {
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className='overflow-y-auto'>
         {menuItems.map((group) => (
           <SidebarGroup key={group.title}>
             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>

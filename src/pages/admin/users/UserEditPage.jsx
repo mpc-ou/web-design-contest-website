@@ -15,7 +15,8 @@ const UserEditPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     studentId: '',
@@ -39,7 +40,8 @@ const UserEditPage = () => {
       const user = response.data;
       
       setFormData({
-        name: user.name || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
         email: user.email || '',
         phone: user.phone || '',
         studentId: user.studentId || '',
@@ -77,9 +79,8 @@ const UserEditPage = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name?.trim()) {
-      newErrors.name = 'Họ và tên là bắt buộc';
-    }
+    if (!formData.firstName?.trim()) newErrors.firstName = 'Họ là bắt buộc';
+    if (!formData.lastName?.trim()) newErrors.lastName = 'Tên là bắt buộc';
     
     if (!formData.email?.trim()) {
       newErrors.email = 'Email là bắt buộc';
@@ -167,15 +168,26 @@ const UserEditPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                label="Họ và tên"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                error={errors.name}
-                placeholder="Nhập họ và tên"
-                required
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  label="Họ"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  error={errors.firstName}
+                  placeholder="Họ"
+                  required
+                />
+                <FormField
+                  label="Tên"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  error={errors.lastName}
+                  placeholder="Tên"
+                  required
+                />
+              </div>
 
               <FormField
                 label="Email"

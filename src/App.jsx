@@ -8,6 +8,7 @@ import ProfileEditPage from "./pages/ProfileEditPage";
 import ContestDetailPage from "./pages/ContestDetailPage";
 import ContestRegistrationPage from "./pages/ContestRegistrationPage";
 import ExhibitionsPage from "./pages/ExhibitionsPage";
+import ExhibitionDetailPage from "./pages/ExhibitionDetailPage";
 import ContestsPage from "./pages/ContestsPage";
 import TeamsPage from "./pages/TeamsPage";
 import MinigamesPage from "./pages/MinigamesPage";
@@ -31,6 +32,7 @@ function App() {
           <Route path="login" element={<LoginPage />} />
           <Route path="contests/:contestCode" element={<ContestDetailPage />} />
           <Route path="exhibitions" element={<ExhibitionsPage />} />
+          <Route path="exhibitions/:exhibitionId" element={<ExhibitionDetailPage />} />
           <Route path="contests" element={<ContestsPage />} />
           <Route path="teams" element={<TeamsPage />} />
           <Route path="minigames" element={<MinigamesPage />} />

@@ -1,22 +1,27 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
+import { toast } from 'sonner';
 
 // Import components
 import HeroSection from '../components/home/HeroSection';
 import CurrentContestSection from '../components/home/CurrentContestSection';
+import IntroductionSection from '../components/home/IntroductionSection'; // New
 import ContestsGrid from '../components/home/ContestsGrid';
 import ExhibitionSection from '../components/home/ExhibitionSection';
+import SponsorsSection from '../components/home/SponsorsSection'; // New
 import GallerySection from '../components/home/GallerySection';
 import FeaturesSection from '../components/home/FeaturesSection';
 import CTASection from '../components/home/CTASection';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../contexts/AuthContext';
 
 const HomePage = () => {
   const [contests, setContests] = useState([]);
   const [currentContest, setCurrentContest] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,6 +43,7 @@ const HomePage = () => {
       } catch (error) {
         console.error('Error fetching data:', error);
         setCurrentContest(null);
+        toast.error('Không thể tải dữ liệu trang chủ');
       } finally {
         setLoading(false);
       }
@@ -68,20 +74,24 @@ const HomePage = () => {
                 <ArrowRightIcon className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button variant="outline" size="lg" asChild >
-              <Link to="/login" className='text-primary'>
-                Đăng nhập ngay
-              </Link>
-            </Button>
+            {user && (
+              <Button size="lg" asChild>
+                <Link to="/login">
+                  Đăng nhập
+                </Link>
+              </Button>
+            )}
           </>
         )}
       />
       <CurrentContestSection contest={currentContest} />
-      <ContestsGrid contests={contests} />
-      <ExhibitionSection />
+      <IntroductionSection /> 
       <GallerySection />
+      {/* <ContestsGrid contests={contests} /> */}
+      <ExhibitionSection />
       <FeaturesSection />
       <CTASection />
+      <SponsorsSection /> 
     </div>
   );
 };

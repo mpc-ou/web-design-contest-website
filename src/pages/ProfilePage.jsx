@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
@@ -32,8 +32,9 @@ import { useNotification } from '../hooks/useNotification';
 import { decodeJwt } from '../utils/jwtUtils';
 
 const ProfilePage = () => {
-  const { currentUser, userInfo, refreshUserInfo } = useAuth();
+  const { currentUser, userInfo, refreshUserInfo, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const isDevMode = (import.meta.env?.VITE_DEVMODE === 'true') || false;
   const [firebaseToken, setFirebaseToken] = useState('');
   const [backendToken, setBackendToken] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -145,15 +146,14 @@ const ProfilePage = () => {
           <Avatar className="h-16 w-16">
             <AvatarImage src={userInfo?.avatar || currentUser.photoURL} />
             <AvatarFallback>
-              {userInfo?.firstName?.[0] || currentUser.displayName?.[0] || currentUser.email?.[0]}
+              {(userInfo?.firstName?.[0] || userInfo?.lastName?.[0]) || currentUser.displayName?.[0] || currentUser.email?.[0]}
             </AvatarFallback>
           </Avatar>
           <div>
             <h1 className="text-3xl font-bold">
-              {userInfo?.firstName && userInfo?.lastName 
-                ? `${userInfo.firstName} ${userInfo.lastName}`
-                : currentUser.displayName || 'Developer Profile'
-              }
+              {userInfo?.firstName || userInfo?.lastName
+                ? `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim()
+                : currentUser.displayName || 'Developer Profile'}
             </h1>
             <p className="text-muted-foreground flex items-center gap-2">
               {userInfo?.role === 'admin' && (
@@ -176,38 +176,40 @@ const ProfilePage = () => {
         </Button>
       </div>
 
-      {/* Quick Token Access */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <KeyIcon className="h-5 w-5" />
-            Backend API Token
-          </CardTitle>
-          <CardDescription>
-            Token để truy cập API backend (sử dụng trong development)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {backendToken ? (
-            <TokenDisplay 
-              token={backendToken}
-              show={showBackendToken}
-              onToggle={() => setShowBackendToken(!showBackendToken)}
-              label="Backend Token"
-            />
-          ) : (
-            <Alert>
-              <AlertDescription>
-                Không tìm thấy backend token. Hãy đăng xuất và đăng nhập lại.
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+      {/* Quick Token Access (Dev only) */}
+      {isDevMode && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <KeyIcon className="h-5 w-5" />
+              Backend API Token
+            </CardTitle>
+            <CardDescription>
+              Token để truy cập API backend (sử dụng trong development)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {backendToken ? (
+              <TokenDisplay 
+                token={backendToken}
+                show={showBackendToken}
+                onToggle={() => setShowBackendToken(!showBackendToken)}
+                label="Backend Token"
+              />
+            ) : (
+              <Alert>
+                <AlertDescription>
+                  Không tìm thấy backend token. Hãy đăng xuất và đăng nhập lại.
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={`grid w-full ${isDevMode ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <UserIcon className="h-4 w-4" />
             Thông tin
@@ -216,10 +218,12 @@ const ProfilePage = () => {
             <ShieldCheckIcon className="h-4 w-4" />
             Bảo mật
           </TabsTrigger>
-          <TabsTrigger value="dev" className="flex items-center gap-2">
-            <ComputerDesktopIcon className="h-4 w-4" />
-            Dev Zone
-          </TabsTrigger>
+          {isDevMode && (
+            <TabsTrigger value="dev" className="flex items-center gap-2">
+              <ComputerDesktopIcon className="h-4 w-4" />
+              Dev Zone
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Profile Tab */}
@@ -240,13 +244,20 @@ const ProfilePage = () => {
                   >
                     Chỉnh sửa
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate('/profile/registrations')}
-                  >
-                    Form đăng ký
-                  </Button>
+                  <div className="flex gap-2">
+                    {isAdmin && (
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to="/admin">Trang admin</Link>
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/profile/registrations')}
+                    >
+                      Form đăng ký
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -256,10 +267,9 @@ const ProfilePage = () => {
                     Tên hiển thị
                   </div>
                   <p className="font-medium">
-                    {userInfo?.firstName && userInfo?.lastName 
-                      ? `${userInfo.firstName} ${userInfo.lastName}`
-                      : currentUser.displayName || 'Chưa đặt tên'
-                    }
+                    {userInfo?.firstName || userInfo?.lastName
+                      ? `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim()
+                      : currentUser.displayName || 'Chưa đặt tên'}
                   </p>
                 </div>
 
@@ -367,8 +377,8 @@ const ProfilePage = () => {
             </Card>
           </div>
 
-          {/* Full Backend Data */}
-          {userInfo && (
+          {/* Full Backend Data (Dev only) */}
+          {isDevMode && userInfo && (
             <Card>
               <CardHeader>
                 <CardTitle>Dữ liệu Backend đầy đủ</CardTitle>
@@ -444,6 +454,7 @@ const ProfilePage = () => {
         </TabsContent>
 
         {/* Dev Zone Tab */}
+        {isDevMode && (
         <TabsContent value="dev" className="space-y-6">
           <Alert>
             <ComputerDesktopIcon className="h-4 w-4" />
@@ -553,6 +564,42 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
 
+          {/* Teams participated */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Đội đã tham gia</CardTitle>
+              <CardDescription>Danh sách đội bạn đã tham gia các cuộc thi</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {Array.isArray(userInfo?.teams) && userInfo.teams.length > 0 ? (
+                <div className="space-y-3">
+                  {userInfo.teams.map((team) => (
+                    <div key={team._id} className="p-3 border rounded-lg flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="font-medium">{team.teamName} <span className="text-muted-foreground">({team.division})</span></div>
+                        <div className="text-sm text-muted-foreground">Cuộc thi: {team.contest?.code} - {team.contest?.name}</div>
+                        <div className="text-xs text-muted-foreground">Trạng thái: {team.status} • Ngày đăng ký: {new Date(team.registeredAt).toLocaleDateString('vi-VN')}</div>
+                      </div>
+                      <div className="flex gap-2">
+                        {isAdmin ? (
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={`/admin/teams/${team._id}`}>Xem đội</Link>
+                          </Button>
+                        ) : (
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to="/teams">Xem đội</Link>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">Bạn chưa tham gia đội nào</div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* User Identifiers */}
           <Card>
             <CardHeader>
@@ -592,6 +639,7 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
         </TabsContent>
+        )}
       </Tabs>
 
       {/* Notification */}

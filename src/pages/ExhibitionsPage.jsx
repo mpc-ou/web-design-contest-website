@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { CalendarIcon, MagnifyingGlassIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../services/api';
+import { toast } from 'sonner';
 
 const ExhibitionsPage = () => {
   const [exhibitions, setExhibitions] = useState([]);
@@ -59,6 +60,7 @@ const ExhibitionsPage = () => {
 
     } catch (error) {
       console.error('Error fetching exhibitions:', error);
+      toast.error('Không thể tải danh sách triển lãm');
       return []
     } finally {
       setLoading(false);
@@ -156,7 +158,7 @@ const ExhibitionsPage = () => {
               <Card key={exhibition._id} className="group overflow-hidden hover:shadow-lg transition-all duration-300">
                 <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={exhibition.image || "/img/contest-bg.jpg"}
+                    src={exhibition.thumbnail || exhibition.bannerImage || exhibition.banner || exhibition.image || "/img/contest-bg.jpg"}
                     alt={exhibition.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
@@ -174,17 +176,20 @@ const ExhibitionsPage = () => {
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CalendarIcon className="h-4 w-4" />
-                    <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
+                    <span>
+                      {exhibition.startDate ? formatDate(exhibition.startDate) : ''}
+                      {exhibition.endDate ? ` - ${formatDate(exhibition.endDate)}` : ''}
+                    </span>
                   </div>
                   
                   <div className="flex justify-between items-center">
                     <div className="text-sm">
                       <span className="text-muted-foreground">Cuộc thi:</span> 
-                      <span className="font-medium ml-1">{exhibition.contestCode}</span>
+                      <span className="font-medium ml-1">{exhibition.contestCode || exhibition.contest?.code || '-'}</span>
                     </div>
-                    {exhibition.totalWorks && (
+                    {(exhibition.itemCount || exhibition.totalWorks) && (
                       <div className="text-sm text-muted-foreground">
-                        {exhibition.totalWorks} tác phẩm
+                        {exhibition.itemCount || exhibition.totalWorks} tác phẩm
                       </div>
                     )}
                   </div>

@@ -35,6 +35,42 @@ api.interceptors.response.use(
   }
 );
 
+// Helper: build FormData for multipart requests
+const buildMultipartFormData = (data = {}) => {
+  const formData = new FormData();
+  const append = (key, value) => {
+    if (value === undefined || value === null) return;
+    if (Array.isArray(value)) {
+      value.forEach((v) => append(key, v));
+      return;
+    }
+    // Only append File/Blob or primitives/strings
+    if (value instanceof File || value instanceof Blob) {
+      formData.append(key, value);
+    } else if (typeof value === 'object') {
+      // Stringify nested objects
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, value);
+    }
+  };
+
+  Object.entries(data).forEach(([key, value]) => {
+    // Special handling for known array file fields: images, gallery
+    if ((key === 'images' || key === 'gallery') && Array.isArray(value)) {
+      value.forEach((file) => {
+        if (file instanceof File || file instanceof Blob) {
+          formData.append(key, file);
+        }
+      });
+      return;
+    }
+    append(key, value);
+  });
+
+  return formData;
+};
+
 // Export API service
 export const apiService = {
   // Auth
@@ -53,6 +89,10 @@ export const apiService = {
 
   // Exhibitions
   getExhibitions: (params = {}) => api.get('/api/exhibitions', { params }),
+  getExhibition: (exhibitionId) => api.get(`/api/exhibitions/${exhibitionId}`),
+  // Public Exhibition Items (separate collection)
+  getExhibitionItems: (exhibitionId, params = {}) => api.get(`/api/exhibition-items/exhibition/${exhibitionId}`, { params }),
+  getExhibitionItem: (itemId) => api.get(`/api/exhibition-items/${itemId}`),
 
   // Sponsors
   getSponsors: () => api.get('/api/sponsors'),
@@ -139,9 +179,34 @@ export const apiService = {
   // Admin Exhibitions
   getAdminExhibitions: (params = {}) => api.get('/api/admin/exhibitions', { params }),
   getAdminExhibition: (exhibitionId) => api.get(`/api/admin/exhibitions/${exhibitionId}`),
-  createAdminExhibition: (exhibitionData) => api.post('/api/admin/exhibitions', exhibitionData),
-  updateAdminExhibition: (exhibitionId, exhibitionData) => api.put(`/api/admin/exhibitions/${exhibitionId}`, exhibitionData),
+  createAdminExhibition: (exhibitionData) => {
+    const formData = buildMultipartFormData(exhibitionData);
+    return api.post('/api/admin/exhibitions', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  updateAdminExhibition: (exhibitionId, exhibitionData) => {
+    const formData = buildMultipartFormData(exhibitionData);
+    return api.put(`/api/admin/exhibitions/${exhibitionId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
   deleteAdminExhibition: (exhibitionId) => api.delete(`/api/admin/exhibitions/${exhibitionId}`),
+
+  // Admin Exhibition Items
+  addAdminExhibitionItem: (exhibitionId, itemData) => {
+    const formData = buildMultipartFormData(itemData);
+    return api.post(`/api/admin/exhibitions/${exhibitionId}/items`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  updateAdminExhibitionItem: (exhibitionId, itemId, itemData) => {
+    const formData = buildMultipartFormData(itemData);
+    return api.put(`/api/admin/exhibitions/${exhibitionId}/items/${itemId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  deleteAdminExhibitionItem: (exhibitionId, itemId) => api.delete(`/api/admin/exhibitions/${exhibitionId}/items/${itemId}`),
   
   // Admin Minigames
   getAdminMinigames: (params = {}) => api.get('/api/admin/minigames', { params }),

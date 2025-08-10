@@ -25,6 +25,7 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 import { apiService } from "../services/api";
+import { toast } from 'sonner';
 
 const ContestsPage = () => {
   const [contests, setContests] = useState([]);
@@ -75,6 +76,7 @@ const ContestsPage = () => {
       });
     } catch (error) {
       console.error("Error fetching contests:", error);
+      toast.error('Không thể tải danh sách cuộc thi');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -100,12 +102,34 @@ const ContestsPage = () => {
     });
   };
 
-  const isRegistrationOpen = (contest) => {
-    if (!contest?.timeline) return false;
+  const registrationOpenStatus = (contest) => {
+    if (contest.hadRegistered) return {
+      status: 'registered',
+      message: 'Đã đăng ký'
+    }
+    if (!contest?.timeline) return {
+      status: 'draft',
+      message: 'Nháp'
+    }
     const now = new Date();
     const regStart = new Date(contest.timeline.registrationStart);
     const regEnd = new Date(contest.timeline.registrationEnd);
-    return now >= regStart && now <= regEnd;
+    if (now < regStart) {
+      return {
+        status: 'upcoming',
+        message: 'Sắp mở đăng ký'
+      }
+    }
+    if (now >= regStart && now <= regEnd) {
+      return {
+        status: 'open',
+        message: 'Đang mở đăng ký'
+      }
+    }
+    return {
+      status: 'closed',
+      message: 'Đã đóng đăng ký'
+    }
   };
 
   const getContestStatus = (contest) => {
@@ -139,6 +163,8 @@ const ContestsPage = () => {
         return <Badge variant="outline">Đã kết thúc</Badge>;
       case "draft":
         return <Badge variant="secondary">Nháp</Badge>;
+      case "registered":
+        return <Badge variant="default">Đã đăng ký</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -270,7 +296,7 @@ const ContestsPage = () => {
                   </div>
 
                   <div className="flex gap-2">
-                    {isRegistrationOpen(contest) && (
+                    {registrationOpenStatus(contest).status === 'open' && !contest.hadRegistered && (
                       <Button asChild className="flex-1">
                         <Link to={`/contests/${contest.code}/register`}>
                           Đăng ký ngay

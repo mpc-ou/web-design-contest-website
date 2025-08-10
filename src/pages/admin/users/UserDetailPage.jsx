@@ -128,7 +128,7 @@ const UserDetailPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={user.name || user.displayName || 'Người dùng'}
+        title={`${user.firstName || ''} ${user.lastName || ''}`.trim() || user.displayName || 'Người dùng'}
         description={`Thông tin chi tiết người dùng #${user._id}`}
         actions={pageActions}
         badge={{
@@ -148,7 +148,7 @@ const UserDetailPage = () => {
           }}
         >
           <div className="space-y-1">
-            <DetailCard.Field label="Họ và tên" value={user.name || user.displayName} icon={User} />
+            <DetailCard.Field label="Họ và tên" value={`${user.firstName || ''} ${user.lastName || ''}`.trim() || user.displayName} icon={User} />
             <DetailCard.Field label="Email" value={user.email} type="email" />
             <DetailCard.Field label="Số điện thoại" value={user.phone} type="phone" />
             <DetailCard.Field label="MSSV" value={user.studentId} />

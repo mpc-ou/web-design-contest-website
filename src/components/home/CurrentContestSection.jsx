@@ -13,12 +13,34 @@ const CurrentContestSection = ({ contest }) => {
     });
   };
 
-  const isRegistrationOpen = (contest) => {
-    if (!contest?.timeline) return false;
+  const registrationOpenStatus = (contest) => {
+    if (!contest?.timeline) return {
+      status: 'draft',
+      message: 'Nháp'
+    }
+    if (contest.hadRegistered) return {
+      status: 'registered',
+      message: 'Đã đăng ký'
+    }
     const now = new Date();
     const regStart = new Date(contest.timeline.registrationStart);
     const regEnd = new Date(contest.timeline.registrationEnd);
-    return now >= regStart && now <= regEnd;
+    if (now < regStart) {
+      return {
+        status: 'upcoming',
+        message: 'Sắp mở đăng ký'
+      }
+    }
+    if (now >= regStart && now <= regEnd) {
+      return {
+        status: 'open',
+        message: 'Đang mở đăng ký'
+      }
+    }
+    return {
+      status: 'closed',
+      message: 'Đã đóng đăng ký'
+    }
   };
 
   if (!contest) return null;
@@ -79,7 +101,7 @@ const CurrentContestSection = ({ contest }) => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-3">
-                {isRegistrationOpen(contest) ? (
+                {registrationOpenStatus(contest).status === 'open' ? (
                   <Button asChild>
                     <Link to={`/contests/${contest.code}/register`}>
                       Đăng ký ngay
@@ -87,7 +109,7 @@ const CurrentContestSection = ({ contest }) => {
                   </Button>
                 ) : (
                   <Button disabled>
-                    Đã hết hạn đăng ký
+                    {registrationOpenStatus(contest).message}
                   </Button>
                 )}
                 <Button variant="outline" asChild>

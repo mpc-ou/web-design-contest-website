@@ -6,6 +6,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { BellIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'sonner';
 
 const NotificationPopup = ({ isOpen, onClose }) => {
   const { currentUser } = useAuth();
@@ -28,11 +29,12 @@ const NotificationPopup = ({ isOpen, onClose }) => {
         order: 'desc'
       });
       
-      const notifs = response.data.data || [];
+      const notifs = response.data?.data || [];
       setNotifications(notifs);
       setUnreadCount(notifs.filter(n => !n.isRead).length);
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      toast.error('Không thể tải thông báo');
     } finally {
       setLoading(false);
     }
@@ -49,6 +51,7 @@ const NotificationPopup = ({ isOpen, onClose }) => {
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error marking notification as read:', error);
+      toast.error('Không thể đánh dấu đã đọc');
     }
   };
 
@@ -61,12 +64,18 @@ const NotificationPopup = ({ isOpen, onClose }) => {
     });
   };
 
-  const getTargetLabel = (target) => {
-    switch (target) {
-      case 'all': return 'Tất cả';
-      case 'teams': return 'Đội thi';
-      case 'students': return 'Sinh viên';
-      default: return target;
+  const getScopeBadge = (notif) => {
+    switch (notif.scope) {
+      case 'all':
+        return <Badge variant="outline" className="text-xs">Tất cả</Badge>;
+      case 'contest':
+        return <Badge variant="secondary" className="text-xs">Cuộc thi {notif.contestCode}</Badge>;
+      case 'role':
+        return <Badge variant="outline" className="text-xs">Vai trò: {notif.role}</Badge>;
+      case 'user':
+        return <Badge variant="outline" className="text-xs">Cá nhân</Badge>;
+      default:
+        return null;
     }
   };
 
@@ -112,10 +121,8 @@ const NotificationPopup = ({ isOpen, onClose }) => {
                         <CardTitle className="text-sm font-medium line-clamp-2">
                           {notification.title}
                         </CardTitle>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs">
-                            {getTargetLabel(notification.target)}
-                          </Badge>
+                      <div className="flex items-center gap-2 mt-1">
+                          {getScopeBadge(notification)}
                           {notification.isPinned && (
                             <Badge variant="secondary" className="text-xs">
                               Đã ghim

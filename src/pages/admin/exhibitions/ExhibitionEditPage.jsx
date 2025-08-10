@@ -17,9 +17,15 @@ const ExhibitionEditPage = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    demoUrl: '',
-    technologies: [],
+    contest: '',
     tags: [],
+    startDate: '',
+    endDate: '',
+    location: '',
+    organizer: '',
+    isPublic: false,
+    thumbnail: null,
+    banner: null,
   });
   const [errors, setErrors] = useState({});
 
@@ -32,13 +38,18 @@ const ExhibitionEditPage = () => {
       setLoading(true);
       const response = await apiService.getAdminExhibition(id);
       const exhibition = response.data;
-      
       setFormData({
         title: exhibition.title || '',
         description: exhibition.description || '',
-        demoUrl: exhibition.demoUrl || '',
-        technologies: exhibition.technologies || [],
+        contest: exhibition.contest?._id || exhibition.contest || '',
         tags: exhibition.tags || [],
+        startDate: exhibition.startDate ? exhibition.startDate.slice(0, 16) : '',
+        endDate: exhibition.endDate ? exhibition.endDate.slice(0, 16) : '',
+        location: exhibition.location || '',
+        organizer: exhibition.organizer || '',
+        isPublic: !!exhibition.isPublic,
+        thumbnail: exhibition.thumbnail || null,
+        banner: exhibition.banner || null,
       });
     } catch (error) {
       console.error('Error fetching exhibition:', error);
@@ -158,21 +169,44 @@ const ExhibitionEditPage = () => {
             />
 
             <FormField
-              label="Demo URL"
-              name="demoUrl"
-              type="url"
-              value={formData.demoUrl}
+              label="Thuộc cuộc thi (ID)"
+              name="contest"
+              value={formData.contest}
               onChange={handleChange}
-              placeholder="https://example.com"
+              placeholder="contest-id (tùy chọn)"
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                label="Ngày bắt đầu"
+                name="startDate"
+                type="datetime-local"
+                value={formData.startDate}
+                onChange={handleChange}
+              />
+              <FormField
+                label="Ngày kết thúc"
+                name="endDate"
+                type="datetime-local"
+                value={formData.endDate}
+                onChange={handleChange}
+              />
+            </div>
+
+            <FormField
+              label="Địa điểm"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="Địa điểm tổ chức"
             />
 
             <FormField
-              label="Công nghệ sử dụng"
-              name="technologies"
-              type="tags"
-              value={formData.technologies}
+              label="Đơn vị tổ chức"
+              name="organizer"
+              value={formData.organizer}
               onChange={handleChange}
-              placeholder="React, Node.js, MongoDB, ..."
+              placeholder="Tên đơn vị tổ chức"
             />
 
             <FormField
@@ -183,6 +217,34 @@ const ExhibitionEditPage = () => {
               onChange={handleChange}
               placeholder="web design, responsive, creative, ..."
             />
+
+            <FormField
+              label="Công khai"
+              name="isPublic"
+              type="switch"
+              value={formData.isPublic}
+              onChange={handleChange}
+              description="Bật để công khai triển lãm"
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                label="Thumbnail"
+                name="thumbnail"
+                type="file"
+                value={formData.thumbnail}
+                onChange={handleChange}
+                accept="image/*"
+              />
+              <FormField
+                label="Banner"
+                name="banner"
+                type="file"
+                value={formData.banner}
+                onChange={handleChange}
+                accept="image/*"
+              />
+            </div>
           </CardContent>
         </Card>
       </form>
