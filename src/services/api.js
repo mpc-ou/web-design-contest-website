@@ -214,21 +214,32 @@ export const apiService = {
   },
   deleteAdminExhibitionItem: (exhibitionId, itemId) => api.delete(`/api/admin/exhibitions/${exhibitionId}/items/${itemId}`),
   
-  // Admin Minigames
+  // Admin Minigames - API đầy đủ theo backend
   getAdminMinigames: (params = {}) => api.get('/api/admin/minigames', { params }),
   getAdminMinigame: (minigameId) => api.get(`/api/admin/minigames/${minigameId}`),
-  createAdminMinigame: (minigameData) => api.post('/api/admin/minigames', minigameData),
-  updateAdminMinigame: (minigameId, minigameData) => api.put(`/api/admin/minigames/${minigameId}`, minigameData),
+  createAdminMinigame: (minigameData) => {
+    const formData = buildMultipartFormData(minigameData);
+    return api.post('/api/admin/minigames', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  updateAdminMinigame: (minigameId, minigameData) => {
+    const formData = buildMultipartFormData(minigameData);
+    return api.put(`/api/admin/minigames/${minigameId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
   closeAdminMinigame: (minigameId) => api.patch(`/api/admin/minigames/close/${minigameId}`),
   deleteAdminMinigame: (minigameId) => api.delete(`/api/admin/minigames/${minigameId}`),
   
-  // Admin Lucky Tickets
+  // Admin Lucky Tickets - API từ backend
   getAdminLucky: (params = {}) => api.get('/api/admin/lucky', { params }),
-  drawAdminLucky: (minigameId, confirm = false) => api.post(`/api/admin/lucky/draw/${minigameId}?confirm=${confirm}`),
+  getAdminLuckyByMinigame: (minigameId, params = {}) => api.get(`/api/admin/lucky/by-minigame/${minigameId}`, { params }),
+  drawAdminLucky: (minigameId, confirm = false) => api.post(`/api/admin/lucky/draw/${minigameId}`, { confirm }),
+  getAdminLuckyWinners: (minigameId, params = {}) => api.get(`/api/admin/lucky/winners/${minigameId}`, { params }),
+  resetAdminLuckyWinners: (minigameId) => api.post(`/api/admin/lucky/reset-winners/${minigameId}`),
   invalidateAdminLucky: (luckyId) => api.post(`/api/admin/lucky/invalidate/${luckyId}`),
   deleteAdminLucky: (luckyId) => api.delete(`/api/admin/lucky/${luckyId}`),
-  resetAdminLuckyWinners: (minigameId) => api.post(`/api/admin/lucky/reset-winners/${minigameId}`),
-  getAdminLuckyWinners: (minigameId) => api.get(`/api/admin/lucky/winners/${minigameId}`),
   
   // Admin Notifications
   getAdminNotifications: (params = {}) => api.get('/api/admin/notifications', { params }),
