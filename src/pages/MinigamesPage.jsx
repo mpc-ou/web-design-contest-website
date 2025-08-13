@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { CalendarIcon, TrophyIcon, TicketIcon, PlayIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, TrophyIcon, TicketIcon, PlayIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../services/api';
 import MinigameDetail from '../components/minigame/MinigameDetail';
 
@@ -60,8 +60,13 @@ const MinigamesPage = () => {
     }
   };
 
-  const handlePlayMinigame = (minigame) => {
+  const handleOpenDetail = (minigame) => {
     setSelectedMinigame(minigame);
+  };
+
+  const isRunning = (minigame) => {
+    const now = new Date();
+    return !minigame.isClosed && now >= new Date(minigame.startTime) && now <= new Date(minigame.endTime);
   };
 
   if (selectedMinigame) {
@@ -85,14 +90,16 @@ const MinigamesPage = () => {
   }
 
   return (
-    <div className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Minigames</h1>
-        <p className="text-muted-foreground">Tham gia các minigame để có cơ hội nhận giải thưởng</p>
+    <div className="container py-8 space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold">Minigames</h1>
+        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          Tham gia các minigame thú vị để có cơ hội nhận giải thưởng hấp dẫn.
+        </p>
       </div>
 
       {error && (
-        <Alert variant="destructive" className="mb-6">
+        <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -100,85 +107,54 @@ const MinigamesPage = () => {
       {minigames.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {minigames.map((minigame) => (
-            <Card key={minigame._id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              {minigame.thumbnail && (
-                <div className="aspect-video relative overflow-hidden">
-                  <img
-                    src={minigame.thumbnail}
-                    alt={minigame.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-2 right-2">
-                    {getStatusBadge(minigame)}
-                  </div>
+            <Card key={minigame._id} className="group overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div className="relative aspect-video overflow-hidden">
+                <img
+                  src={minigame.thumbnail || '/img/wd.jpg'}
+                  alt={minigame.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+                <div className="absolute top-2 right-2">
+                  {getStatusBadge(minigame)}
                 </div>
-              )}
-              
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg mb-1">{minigame.name}</CardTitle>
-                    <CardDescription>{minigame.description}</CardDescription>
-                  </div>
-                  {!minigame.thumbnail && (
-                    <div className="ml-2">
-                      {getStatusBadge(minigame)}
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <TicketIcon className="h-4 w-4 text-muted-foreground" />
-                    <span>Tối đa: {minigame.maxNumber} vé</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <TrophyIcon className="h-4 w-4 text-muted-foreground" />
-                    <span>{minigame.maxWinners} người thắng</span>
-                  </div>
-                </div>
+              </div>
 
+              <CardHeader>
+                <CardTitle className="text-lg line-clamp-2">{minigame.name}</CardTitle>
+                <CardDescription className="line-clamp-3">{minigame.description}</CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-3">
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <CalendarIcon className="h-4 w-4" />
+                    <TicketIcon className="h-4 w-4" />
+                    <span>Tối đa: {minigame.maxNumber} vé</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <TrophyIcon className="h-4 w-4" />
+                    <span>{minigame.maxWinners} người thắng</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <ClockIcon className="h-4 w-4" />
                     <span>Bắt đầu: {formatDate(minigame.startTime)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <CalendarIcon className="h-4 w-4" />
+                    <ClockIcon className="h-4 w-4" />
                     <span>Kết thúc: {formatDate(minigame.endTime)}</span>
                   </div>
                 </div>
 
-                {minigame.prizes && minigame.prizes.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Giải thưởng:</h4>
-                    <div className="space-y-1">
-                      {minigame.prizes.slice(0, 2).map((prize, index) => (
-                        <div key={index} className="text-sm text-muted-foreground">
-                          • {prize.name} ({prize.amount} giải)
-                        </div>
-                      ))}
-                      {minigame.prizes.length > 2 && (
-                        <div className="text-sm text-muted-foreground">
-                          và {minigame.prizes.length - 2} giải khác...
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <Button
-                  className="w-full gap-2"
-                  onClick={() => handlePlayMinigame(minigame)}
-                  disabled={minigame.isClosed || !minigame.isRunning}
-                >
-                  <PlayIcon className="h-4 w-4" />
-                  {minigame.isClosed ? 'Đã kết thúc' : 
-                   !minigame.isRunning ? 'Chưa bắt đầu' : 'Tham gia'}
-                </Button>
+                <div className="flex gap-2">
+                  {isRunning(minigame) && (
+                    <Button className="flex-1" onClick={() => handleOpenDetail(minigame)}>
+                      Tham gia
+                    </Button>
+                  )}
+                  <Button variant="outline" className="flex-1" onClick={() => handleOpenDetail(minigame)}>
+                    Xem chi tiết
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

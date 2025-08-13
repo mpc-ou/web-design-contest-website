@@ -13,12 +13,13 @@ const NotificationPopup = ({ isOpen, onClose }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showOnlyUnread, setShowOnlyUnread] = useState(false);
 
   useEffect(() => {
     if (isOpen && currentUser) {
       fetchNotifications();
     }
-  }, [isOpen, currentUser]);
+  }, [isOpen, currentUser, showOnlyUnread]);
 
   const fetchNotifications = async () => {
     try {
@@ -26,9 +27,9 @@ const NotificationPopup = ({ isOpen, onClose }) => {
       const response = await apiService.getNotifications({
         limit: 20,
         sortBy: 'createdAt',
-        order: 'desc'
+        order: 'desc',
+        onlyUnread: showOnlyUnread ? 'true' : undefined,
       });
-      
       const notifs = response.data?.data || [];
       setNotifications(notifs);
       setUnreadCount(notifs.filter(n => !n.isRead).length);
@@ -43,15 +44,23 @@ const NotificationPopup = ({ isOpen, onClose }) => {
   const markAsRead = async (notificationId) => {
     try {
       await apiService.markNotificationAsRead(notificationId);
-      setNotifications(prev => 
-        prev.map(n => 
-          n._id === notificationId ? { ...n, isRead: true } : n
-        )
-      );
+      setNotifications(prev => prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error marking notification as read:', error);
       toast.error('Không thể đánh dấu đã đọc');
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await apiService.markAllNotificationsAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+      toast.success('Đã đánh dấu tất cả là đã đọc');
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+      toast.error('Không thể đánh dấu tất cả');
     }
   };
 
@@ -94,9 +103,18 @@ const NotificationPopup = ({ isOpen, onClose }) => {
               </Badge>
             )}
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <XMarkIcon className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowOnlyUnread(v => !v)}>
+              {showOnlyUnread ? 'Tất cả' : 'Chưa đọc'}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0}>
+              <CheckIcon className="h-4 w-4 mr-1" />
+              Đánh dấu tất cả
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <XMarkIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <ScrollArea className="max-h-[60vh]">
@@ -121,7 +139,7 @@ const NotificationPopup = ({ isOpen, onClose }) => {
                         <CardTitle className="text-sm font-medium line-clamp-2">
                           {notification.title}
                         </CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 mt-1">
                           {getScopeBadge(notification)}
                           {notification.isPinned && (
                             <Badge variant="secondary" className="text-xs">

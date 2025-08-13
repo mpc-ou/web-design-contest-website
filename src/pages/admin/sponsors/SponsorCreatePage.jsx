@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Building } from 'lucide-react';
+import { ArrowLeft, Save, Building, Upload, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { apiService } from '../../../services/api';
@@ -13,10 +13,11 @@ const SponsorCreatePage = () => {
   const [formData, setFormData] = useState({
     name: '',
     website: '',
-    logo: null,
     description: '',
     tier: 'bronze',
   });
+  const [logo, setLogo] = useState(null);
+  const [logoPreview, setLogoPreview] = useState('');
   const [errors, setErrors] = useState({});
 
   const handleChange = (name, value) => {
@@ -24,6 +25,23 @@ const SponsorCreatePage = () => {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setLogo(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    setLogo(null);
+    setLogoPreview('');
   };
 
   const handleSubmit = async (e) => {
@@ -43,8 +61,8 @@ const SponsorCreatePage = () => {
       formDataToSend.append('description', formData.description);
       formDataToSend.append('tier', formData.tier);
       
-      if (formData.logo && typeof formData.logo === 'object') {
-        formDataToSend.append('logo', formData.logo);
+      if (logo) {
+        formDataToSend.append('logo', logo);
       }
       
       await apiService.createAdminSponsor(formDataToSend);
@@ -105,14 +123,40 @@ const SponsorCreatePage = () => {
               value={formData.website}
               onChange={handleChange}
             />
-                          <FormField
-                label="Logo"
-                name="logo"
-                type="file"
-                value={formData.logo}
-                onChange={handleChange}
-                description="Chọn logo của nhà tài trợ (khuyến nghị: PNG với nền trong suốt)"
-              />
+            {/* Logo Upload */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Logo</label>
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                {logoPreview ? (
+                  <div className="relative">
+                    <img 
+                      src={logoPreview} 
+                      alt="Logo preview" 
+                      className="w-full h-48 object-contain rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeLogo}
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-48 cursor-pointer">
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">Click để upload logo</span>
+                    <span className="text-xs text-gray-400 mt-1">PNG, JPG, GIF với nền trong suốt (khuyến nghị)</span>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
             <FormField
               label="Mô tả"
               name="description"

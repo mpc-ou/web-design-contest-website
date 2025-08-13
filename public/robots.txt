@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://your-domain.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+
+# Allow important pages
+Allow: /
+Allow: /contests
+Allow: /exhibitions
+Allow: /minigames
+Allow: /sponsors
+Allow: /faq
+
+# Crawl delay
+Crawl-delay: 1

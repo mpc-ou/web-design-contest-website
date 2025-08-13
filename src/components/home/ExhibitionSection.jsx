@@ -100,7 +100,7 @@ const ExhibitionSection = () => {
                   <Card key={exhibition._id} className="group overflow-hidden hover:shadow-xl transition-all duration-300">
                     <div className="relative aspect-video overflow-hidden">
                       <img
-                        src={exhibition.image || "/img/contest-bg.jpg"}
+                        src={exhibition.thumbnail || "/img/contest-bg.jpg"}
                         alt={exhibition.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -132,7 +132,7 @@ const ExhibitionSection = () => {
                           <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          <span className="font-medium">Cuộc thi:</span> {exhibition.contestCode}
+                          {exhibition.contestCode && <><span className="font-medium">Cuộc thi:</span> {exhibition.contestCode}</>}
                         </div>
                         {exhibition.totalWorks && (
                           <div className="text-sm text-muted-foreground">
@@ -179,7 +179,7 @@ const ExhibitionSection = () => {
               <div className="space-y-4">
                 <div className="aspect-video rounded-lg overflow-hidden">
                   <img
-                    src={selectedExhibition.image || "/img/contest-bg.jpg"}
+                    src={selectedExhibition.thumbnail || "/img/contest-bg.jpg"}
                     alt={selectedExhibition.title}
                     className="w-full h-full object-cover"
                   />

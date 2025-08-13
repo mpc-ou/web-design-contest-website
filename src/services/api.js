@@ -98,7 +98,10 @@ export const apiService = {
   getSponsors: () => api.get('/api/sponsors'),
 
   // Common data (gallery, settings, etc.)
-  getCommonData: (code = 'test') => api.get(`/api/common?code=${code}`),
+  getCommonData: (code = 'main') => api.get(`/api/common?code=${code}`),
+  updateCommonData: (code, formData) => api.patch(`/api/admin/common/${code}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 
   // Teams
   getTeams: (params = {}) => api.get('/api/teams', { params }),
@@ -112,6 +115,7 @@ export const apiService = {
   getMinigames: (params = {}) => api.get('/api/minigames', { params }),
   getMinigame: (minigameId) => api.get(`/api/minigames/${minigameId}`),
   getMinigameTicketInfo: (minigameId) => api.get(`/api/minigames/ticket-info/${minigameId}`),
+  getSelectedNumbers: (minigameId) => api.get(`/api/lucky/selected-numbers/${minigameId}`),
 
   // Lucky tickets
   registerLuckyTicket: (ticketData) => api.post('/api/lucky/register', ticketData),
@@ -122,6 +126,8 @@ export const apiService = {
   getNotifications: (params = {}) => api.get('/api/notifications', { params }),
   getNotification: (notificationId) => api.get(`/api/notifications/${notificationId}`),
   markNotificationAsRead: (notificationId) => api.post(`/api/notifications/${notificationId}/read`),
+  getUnreadNotificationsCount: (params = {}) => api.get('/api/notifications/unread-count', { params }),
+  markAllNotificationsAsRead: (params = {}) => api.post('/api/notifications/mark-all-read', null, { params }),
 
   // FAQ
   getFAQs: (params = {}) => api.get('/api/faqs', { params }),
@@ -233,6 +239,7 @@ export const apiService = {
   
   // Admin FAQs
   getAdminFAQs: (params = {}) => api.get('/api/admin/faqs', { params }),
+  getAdminFAQ: (faqId) => api.get(`/api/admin/faqs/${faqId}`),
   createAdminFAQ: (faqData) => api.post('/api/admin/faqs', faqData),
   updateAdminFAQ: (faqId, faqData) => api.put(`/api/admin/faqs/${faqId}`, faqData),
   deleteAdminFAQ: (faqId) => api.delete(`/api/admin/faqs/${faqId}`),

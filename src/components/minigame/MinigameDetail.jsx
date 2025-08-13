@@ -58,6 +58,61 @@ const MinigameDetail = ({ minigame, onBack, onRefresh }) => {
     }
   };
 
+  const renderOverviewNumberGrid = () => {
+    if (!ticketInfo || !ticketInfo.minigame) return null;
+
+    const total = ticketInfo.stats?.total || ticketInfo.minigame.maxNumber || 0;
+    const showCount = Math.min(total, 100);
+    const numbers = Array.from({ length: showCount }, (_, i) => i + 1);
+    const taken = new Set(ticketInfo.takenNumbers || []);
+    const mine = new Set(ticketInfo.myNumbers || []);
+
+    return (
+      <Card className="mb-8">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <TicketIcon className="h-5 w-5" />
+            Bảng số (tổng {total}, hiển thị {showCount} số đầu)
+          </CardTitle>
+          <CardDescription>
+            Đã chọn: {ticketInfo.stats?.taken || 0} • Còn lại: {ticketInfo.stats?.available || Math.max(total - (ticketInfo.stats?.taken || 0), 0)}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-10 gap-1 max-h-48 overflow-y-auto">
+            {numbers.map((n) => {
+              const isMine = mine.has(n);
+              const isTaken = taken.has(n);
+              return (
+                <div
+                  key={n}
+                  className={`w-7 h-7 text-xs flex items-center justify-center rounded border ${
+                    isMine
+                      ? 'bg-green-500 text-white border-green-600'
+                      : isTaken
+                        ? 'bg-red-500 text-white border-red-600'
+                        : 'bg-gray-50 text-gray-700 border-gray-300'
+                  }`}
+                  title={isMine ? `Số ${n} của bạn` : isTaken ? `Số ${n} đã được chọn` : `Số ${n} còn trống`}
+                >
+                  {n}
+                </div>
+              );
+            })}
+          </div>
+          {total > showCount && (
+            <div className="text-xs text-muted-foreground">Có {total - showCount} số nữa…</div>
+          )}
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-green-500 inline-block"></span> Số của bạn</div>
+            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-red-500 inline-block"></span> Đã có người chọn</div>
+            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-gray-200 inline-block border border-gray-300"></span> Còn trống</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   if (loading) {
     return (
       <div className="container py-8">
@@ -171,6 +226,9 @@ const MinigameDetail = ({ minigame, onBack, onRefresh }) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Overview number grid */}
+      {renderOverviewNumberGrid()}
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">

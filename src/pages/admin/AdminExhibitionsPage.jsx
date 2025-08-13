@@ -144,7 +144,7 @@ const AdminExhibitionsPage = () => {
       if (search) params.search = search;
 
       const response = await apiService.getAdminExhibitions(params);
-      setExhibitions(response.data.data || []);
+      setExhibitions(response.data.exhibitions || []);
       setPagination(response.data.pagination || null);
     } catch (error) {
       console.error('Error fetching exhibitions:', error);

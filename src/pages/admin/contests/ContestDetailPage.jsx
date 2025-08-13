@@ -149,32 +149,24 @@ const ContestDetailPage = () => {
         }}
       />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Thông tin cơ bản */}
-        <DetailCard
-          title="Thông tin cơ bản"
-          icon={Trophy}
-          badge={{
-            text: contest.isActive ? 'Hoạt động' : 'Không hoạt động',
-            variant: contest.isActive ? 'default' : 'secondary'
-          }}
-        >
-          <div className="space-y-1">
+      {/* Thông tin cơ bản - Full width để xử lý text dài */}
+      <DetailCard
+        title="Thông tin cơ bản"
+        icon={Trophy}
+        badge={{
+          text: contest.isActive ? 'Hoạt động' : 'Không hoạt động',
+          variant: contest.isActive ? 'default' : 'secondary'
+        }}
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-3">
             <DetailCard.Field label="Tên cuộc thi" value={contest.name} />
             <DetailCard.Field label="Mã cuộc thi" value={contest.code} />
-            <DetailCard.Field label="Mô tả" value={contest.description} />
             <DetailCard.Field label="Danh mục" value={contest.category} type="badge" />
             <DetailCard.Field label="Trạng thái" value={contest.status} type="status" />
             <DetailCard.Field label="Ngày tạo" value={contest.createdAt} type="datetime" icon={Calendar} />
           </div>
-        </DetailCard>
-
-        {/* Timeline */}
-        <DetailCard
-          title="Timeline"
-          icon={Calendar}
-        >
-          <div className="space-y-1">
+          <div className="space-y-3">
             <DetailCard.Field 
               label="Mở đăng ký" 
               value={contest.timeline?.registrationStart} 
@@ -196,8 +188,18 @@ const ContestDetailPage = () => {
               type="datetime" 
             />
           </div>
-        </DetailCard>
-      </div>
+        </div>
+        
+        {/* Mô tả riêng biệt với giới hạn chiều ngang */}
+        <div className="mt-6 pt-6 border-t">
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Mô tả</h4>
+          <div className="max-w-4xl mx-auto">
+            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-center md:text-left">
+              {contest.description || 'Không có mô tả'}
+            </p>
+          </div>
+        </div>
+      </DetailCard>
 
       {/* Rounds */}
       {contest.rounds && contest.rounds.length > 0 && (
@@ -206,15 +208,20 @@ const ContestDetailPage = () => {
           description={`${contest.rounds.length} vòng thi`}
           icon={Trophy}
         >
-          <div className="space-y-3">
+          <div className="space-y-4">
             {contest.rounds.map((round, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-medium">{round.name}</h4>
-                    <p className="text-sm text-muted-foreground">{round.description}</p>
+              <div key={index} className="border rounded-lg p-4 space-y-3">
+                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-base">{round.name}</h4>
+                    {/* Mô tả vòng thi với giới hạn chiều ngang */}
+                    <div className="mt-2 max-w-3xl">
+                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap break-words">
+                        {round.description || 'Không có mô tả'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
                     <span className="text-xs bg-muted px-2 py-1 rounded">
                       {round.type}
                     </span>
@@ -223,14 +230,14 @@ const ContestDetailPage = () => {
                     </span>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-muted-foreground">Bắt đầu: </span>
-                    {new Date(round.startDate).toLocaleString('vi-VN')}
+                    <span className="font-medium">{new Date(round.startDate).toLocaleString('vi-VN')}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Kết thúc: </span>
-                    {new Date(round.endDate).toLocaleString('vi-VN')}
+                    <span className="font-medium">{new Date(round.endDate).toLocaleString('vi-VN')}</span>
                   </div>
                 </div>
               </div>
@@ -246,28 +253,33 @@ const ContestDetailPage = () => {
           description={`${contest.divisions.length} bảng thi`}
           icon={Users}
         >
-          <div className="space-y-3">
+          <div className="space-y-4">
             {contest.divisions.map((division, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-medium">{division.name}</h4>
-                    <p className="text-sm text-muted-foreground">{division.description}</p>
+              <div key={index} className="border rounded-lg p-4 space-y-3">
+                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-base">{division.name}</h4>
+                    {/* Mô tả bảng thi với giới hạn chiều ngang */}
+                    <div className="mt-2 max-w-3xl">
+                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap break-words">
+                        {division.description || 'Không có mô tả'}
+                      </p>
+                    </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded ${
+                  <span className={`text-xs px-3 py-1 rounded-full flex-shrink-0 ${
                     division.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                   }`}>
                     {division.isActive ? 'Hoạt động' : 'Không hoạt động'}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-muted-foreground">Số đội tối đa: </span>
-                    {division.maxTeams || 'Không giới hạn'}
+                    <span className="font-medium">{division.maxTeams || 'Không giới hạn'}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Số thành viên tối đa: </span>
-                    {division.maxMembers || 'Không giới hạn'}
+                    <span className="font-medium">{division.maxMembers || 'Không giới hạn'}</span>
                   </div>
                 </div>
               </div>

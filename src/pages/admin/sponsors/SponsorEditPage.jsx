@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Building } from 'lucide-react';
+import { ArrowLeft, Save, Building, Upload, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { apiService } from '../../../services/api';
@@ -16,10 +16,11 @@ const SponsorEditPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     website: '',
-    logo: '',
     description: '',
     tier: 'bronze',
   });
+  const [logo, setLogo] = useState(null);
+  const [logoPreview, setLogoPreview] = useState('');
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -34,10 +35,14 @@ const SponsorEditPage = () => {
       setFormData({
         name: sponsor.name || '',
         website: sponsor.website || '',
-        logo: sponsor.logo || '',
         description: sponsor.description || '',
         tier: sponsor.tier || 'bronze',
       });
+      
+      // Set existing logo preview if available
+      if (sponsor.logo) {
+        setLogoPreview(sponsor.logo);
+      }
     } catch (error) {
       toast.error('Có lỗi khi tải thông tin nhà tài trợ');
       navigate('/admin/sponsors');
@@ -53,6 +58,23 @@ const SponsorEditPage = () => {
     }
   };
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setLogo(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    setLogo(null);
+    setLogoPreview('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name?.trim()) {
@@ -62,11 +84,23 @@ const SponsorEditPage = () => {
 
     try {
       setSaving(true);
-      await apiService.updateAdminSponsor(id, formData);
+      
+      const submitData = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (formData[key] !== null && formData[key] !== undefined && formData[key] !== '') {
+          submitData.append(key, formData[key]);
+        }
+      });
+      
+      if (logo) {
+        submitData.append('logo', logo);
+      }
+      
+      await apiService.updateAdminSponsor(id, submitData);
       toast.success('Cập nhật nhà tài trợ thành công');
-      navigate(`/admin/sponsors/${id}`);
+      navigate('/admin/sponsors');
     } catch (error) {
-      toast.error('Có lỗi khi cập nhật nhà tài trợ');
+      toast.error('Có lỗi khi cập nhật nhà tài trợ: ' + (error.response?.data?.error || error.message));
     } finally {
       setSaving(false);
     }
@@ -124,13 +158,40 @@ const SponsorEditPage = () => {
               value={formData.website}
               onChange={handleChange}
             />
-            <FormField
-              label="Logo URL"
-              name="logo"
-              type="url"
-              value={formData.logo}
-              onChange={handleChange}
-            />
+            {/* Logo Upload */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Logo</label>
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                {logoPreview ? (
+                  <div className="relative">
+                    <img 
+                      src={logoPreview} 
+                      alt="Logo preview" 
+                      className="w-full h-48 object-contain rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeLogo}
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-48 cursor-pointer">
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">Click để upload logo mới</span>
+                    <span className="text-xs text-gray-400 mt-1">PNG, JPG, GIF với nền trong suốt (khuyến nghị)</span>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
             <FormField
               label="Mô tả"
               name="description"
