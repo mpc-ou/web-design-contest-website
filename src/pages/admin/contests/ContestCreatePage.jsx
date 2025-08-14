@@ -17,6 +17,7 @@ const ContestCreatePage = () => {
     description: '',
     category: '',
     thumbnail: null,
+    formLink: '',
     images: [],
     timeline: {
       registrationStart: '',
@@ -441,6 +442,16 @@ const ContestCreatePage = () => {
                 rows={4}
               />
             </div>
+
+            <FormField
+                label="Form bên thứ 3?"
+                name="formLink"
+                type="text"
+                value={formData.formLink}
+                onChange={handleChange}
+                placeholder="Link đến form bên thứ 3"
+                rows={4}
+              />
 
             <FormField
               label="Thumbnail"

@@ -25,7 +25,7 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 import { apiService } from "../services/api";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import { useDocumentMeta } from "../hooks/useDocumentMeta";
 
 const ContestsPage = () => {
@@ -82,7 +82,7 @@ const ContestsPage = () => {
       });
     } catch (error) {
       console.error("Error fetching contests:", error);
-      toast.error('Không thể tải danh sách cuộc thi');
+      toast.error("Không thể tải danh sách cuộc thi");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -109,33 +109,35 @@ const ContestsPage = () => {
   };
 
   const registrationOpenStatus = (contest) => {
-    if (contest.hadRegistered) return {
-      status: 'registered',
-      message: 'Đã đăng ký'
-    }
-    if (!contest?.timeline) return {
-      status: 'draft',
-      message: 'Nháp'
-    }
+    if (contest.hadRegistered)
+      return {
+        status: "registered",
+        message: "Đã đăng ký",
+      };
+    if (!contest?.timeline)
+      return {
+        status: "draft",
+        message: "Nháp",
+      };
     const now = new Date();
     const regStart = new Date(contest.timeline.registrationStart);
     const regEnd = new Date(contest.timeline.registrationEnd);
     if (now < regStart) {
       return {
-        status: 'upcoming',
-        message: 'Sắp mở đăng ký'
-      }
+        status: "upcoming",
+        message: "Sắp mở đăng ký",
+      };
     }
     if (now >= regStart && now <= regEnd) {
       return {
-        status: 'open',
-        message: 'Đang mở đăng ký'
-      }
+        status: "open",
+        message: "Đang mở đăng ký",
+      };
     }
     return {
-      status: 'closed',
-      message: 'Đã đóng đăng ký'
-    }
+      status: "closed",
+      message: "Đã đóng đăng ký",
+    };
   };
 
   const getContestStatus = (contest) => {
@@ -302,13 +304,18 @@ const ContestsPage = () => {
                   </div>
 
                   <div className="flex gap-2">
-                    {registrationOpenStatus(contest).status === 'open' && !contest.hadRegistered && (
-                      <Button asChild className="flex-1">
-                        <Link to={`/contests/${contest.code}/register`}>
-                          Đăng ký ngay
-                        </Link>
-                      </Button>
-                    )}
+                    {registrationOpenStatus(contest).status === "open" &&
+                      !contest.hadRegistered && (
+                        <Button asChild className="flex-1">
+                          {contest.formLink ? (
+                            <Link to={contest.formLink}>Đăng ký ngay</Link>
+                          ) : (
+                            <Link to={`/contests/${contest.code}/register`}>
+                              Đăng ký ngay
+                            </Link>
+                          )}
+                        </Button>
+                      )}
                     <Button variant="outline" asChild className="flex-1">
                       <Link to={`/contests/${contest.code}`}>Xem chi tiết</Link>
                     </Button>

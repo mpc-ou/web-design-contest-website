@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2, Trophy, Calendar, Users, Play, Pause, ImageIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { apiService } from '../../../services/api';
 import DetailCard from '../../../components/admin/ui/DetailCard';
 import LoadingCard from '../../../components/admin/ui/LoadingCard';
 import PageHeader from '../../../components/admin/ui/PageHeader';
 import ImageGallery from '../../../components/common/ImageGallery';
+import { Link } from 'react-router-dom';
+import { Link2Icon } from 'lucide-react';
+import ImageCarousel from "../../../components/common/ImageCarousel";
 
 const ContestDetailPage = () => {
   const { code } = useParams();
@@ -187,6 +189,17 @@ const ContestDetailPage = () => {
               value={contest.timeline?.contestEnd} 
               type="datetime" 
             />
+            <DetailCard.Field 
+              label="Các thức đăng ký" 
+              value={
+                contest.formLink ? (
+                  <Link to={contest.formLink}>Form bên thứ 3 <Link2Icon className="inline-block ml-1" /></Link>
+                ) : (
+                  'Trên hệ thống'
+                )
+              }
+              type="text" 
+            />
           </div>
         </div>
         
@@ -295,8 +308,8 @@ const ContestDetailPage = () => {
           description={`${contest.images.length} hình ảnh`}
           icon={ImageIcon}
         >
-          <ImageGallery 
-            images={contest.images} 
+         <ImageCarousel
+            images={contest.images}
             title={`Hình ảnh ${contest.name}`}
           />
         </DetailCard>

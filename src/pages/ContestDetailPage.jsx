@@ -21,7 +21,7 @@ import FacebookIcon from "../components/icons/FacebookIcon";
 import { apiService } from "../services/api";
 import { toast } from "sonner";
 import MarkdownRenderer from "../components/common/MarkdownRenderer";
-import ImageGallery from "../components/common/ImageGallery";
+import ImageCarousel from "../components/common/ImageCarousel";
 import { useDocumentMeta } from "../hooks/useDocumentMeta";
 
 const ContestDetailPage = () => {
@@ -249,7 +249,8 @@ const ContestDetailPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="w-full">
-                <ImageGallery
+                {/* Thay ImageGallery bằng ImageCarousel */}
+                <ImageCarousel
                   images={contest.images}
                   title={`Hình ảnh ${contest.name}`}
                 />
@@ -276,9 +277,13 @@ const ContestDetailPage = () => {
                   </Button>
                 ) : (
                   <Button asChild className="w-full">
-                    <Link to={`/contests/${contest.code}/register`}>
-                      Đăng ký ngay
-                    </Link>
+                    {contest.formLink ? (
+                      <Link to={contest.formLink}>Đăng ký ngay</Link>
+                    ) : (
+                      <Link to={`/contests/${contest.code}/register`}>
+                        Đăng ký ngay
+                      </Link>
+                    )}
                   </Button>
                 )
               ) : (

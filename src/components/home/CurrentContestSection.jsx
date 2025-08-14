@@ -103,9 +103,17 @@ const CurrentContestSection = ({ contest }) => {
               <div className="flex flex-col sm:flex-row gap-3">
                 {registrationOpenStatus(contest).status === 'open' ? (
                   <Button asChild>
-                    <Link to={`/contests/${contest.code}/register`}>
-                      Đăng ký ngay
-                    </Link>
+                    {
+                      contest.formLink ? (
+                        <Link to={contest.formLink}>
+                          Đăng ký ngay
+                        </Link>
+                      ) : (
+                      <Link to={`/contests/${contest.code}/register`}>
+                          Đăng ký ngay
+                        </Link>
+                      )
+                    }
                   </Button>
                 ) : (
                   <Button disabled>

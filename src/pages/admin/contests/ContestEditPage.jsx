@@ -8,6 +8,7 @@ import { apiService } from '../../../services/api';
 import FormField from '../../../components/admin/ui/FormField';
 import PageHeader from '../../../components/admin/ui/PageHeader';
 import LoadingCard from '../../../components/admin/ui/LoadingCard';
+import { Link } from 'react-router-dom';
 
 const ContestEditPage = () => {
   const { code } = useParams();
@@ -20,6 +21,7 @@ const ContestEditPage = () => {
     description: '',
     category: '',
     thumbnail: '',
+    formLink: '', // New field for external registration form
     images: [], // New images to upload
     existingImages: [], // Existing images from server
     timeline: {
@@ -298,6 +300,19 @@ const ContestEditPage = () => {
                 onChange={handleChange}
                 placeholder="Mô tả chi tiết về cuộc thi"
                 rows={4}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <FormField
+                label="Form bên thứ 3?"
+                name="formLink"
+                type="text"
+                value={formData.formLink}
+                onChange={handleChange}
+                placeholder="Link đăng ký bên thứ 3 nếu có"
+                rows={4}
+                required={false}
               />
             </div>
 
