@@ -74,7 +74,6 @@ const Navbar = () => {
     { text: 'Triển lãm', path: '/exhibitions' },
     { text: 'Đội thi', path: '/teams' },
     { text: 'Minigames', path: '/minigames' },
-    ...(currentUser ? [{ text: 'Hồ sơ', path: '/profile' }] : []),
   ];
 
   return (

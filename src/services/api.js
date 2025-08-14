@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
 });
 
 // Request interceptor để thêm token
@@ -159,8 +159,12 @@ export const apiService = {
   // Admin Contests
   getAdminContests: (params = {}) => api.get('/api/admin/contests', { params }),
   getAdminContest: (code) => api.get(`/api/admin/contests/${code}`),
-  createAdminContest: (contestData) => api.post('/api/admin/contests', contestData),
-  updateAdminContest: (code, contestData) => api.patch(`/api/admin/contests/${code}`, contestData),
+  createAdminContest: (contestData) => api.post('/api/admin/contests', contestData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  updateAdminContest: (code, contestData) => api.patch(`/api/admin/contests/${code}`, contestData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
   deleteAdminContest: (code) => api.delete(`/api/admin/contests/${code}`),
   
   // Admin Forms/Registrations

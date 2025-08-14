@@ -63,7 +63,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       <HeroSection 
-        imageUrl="/img/wd.jpg"
+        imageUrl="/img/bg2.jpg"
         title="Web Design Contest"
         description="Một cuộc thi thiết kế web dành cho sinh viên trường Đại học Mở TPHCM do CLB Lập trình trên thiết bị di động tổ chức"
         buttonComponents={(

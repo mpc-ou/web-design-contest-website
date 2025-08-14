@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -10,25 +11,25 @@ import { toast } from 'sonner';
 
 const NotificationPopup = ({ isOpen, onClose }) => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [showOnlyUnread, setShowOnlyUnread] = useState(false);
 
   useEffect(() => {
     if (isOpen && currentUser) {
       fetchNotifications();
     }
-  }, [isOpen, currentUser, showOnlyUnread]);
+  }, [isOpen, currentUser]);
 
   const fetchNotifications = async () => {
     try {
       setLoading(true);
+      // No filter; just get the latest notifications
       const response = await apiService.getNotifications({
         limit: 20,
         sortBy: 'createdAt',
         order: 'desc',
-        onlyUnread: showOnlyUnread ? 'true' : undefined,
       });
       const notifs = response.data?.data || [];
       setNotifications(notifs);
@@ -61,6 +62,25 @@ const NotificationPopup = ({ isOpen, onClose }) => {
     } catch (error) {
       console.error('Error marking all as read:', error);
       toast.error('Không thể đánh dấu tất cả');
+    }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    // Mark as read first (if needed)
+    if (!notification.isRead) {
+      try {
+        await apiService.markNotificationAsRead(notification._id);
+        setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, isRead: true } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } catch (error) {
+        // Don’t block navigation if marking read fails
+        console.error('Error marking notification as read:', error);
+      }
+    }
+    // Close popup and navigate if url is available
+    onClose?.();
+    if (notification.url) {
+      navigate(notification.url);
     }
   };
 
@@ -104,9 +124,6 @@ const NotificationPopup = ({ isOpen, onClose }) => {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setShowOnlyUnread(v => !v)}>
-              {showOnlyUnread ? 'Tất cả' : 'Chưa đọc'}
-            </Button>
             <Button variant="ghost" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0}>
               <CheckIcon className="h-4 w-4 mr-1" />
               Đánh dấu tất cả
@@ -117,7 +134,7 @@ const NotificationPopup = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        <ScrollArea className="max-h-[60vh]">
+        <ScrollArea className="max-h-[60vh] overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center p-8">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
@@ -128,18 +145,21 @@ const NotificationPopup = ({ isOpen, onClose }) => {
                 <Card 
                   key={notification._id} 
                   className={`
-                    mb-2 cursor-pointer transition-colors
-                    ${!notification.isRead ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' : ''}
+                    mb-2 cursor-pointer transition-all hover:shadow-md gap-2 py-4
+                    ${!notification.isRead 
+                      ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-700' 
+                      : 'bg-background hover:bg-muted/50'
+                    }
                   `}
-                  onClick={() => !notification.isRead && markAsRead(notification._id)}
+                  onClick={() => handleNotificationClick(notification)}
                 >
-                  <CardHeader className="pb-2">
+                  <CardHeader className="pb-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle className="text-sm font-medium line-clamp-2">
                           {notification.title}
                         </CardTitle>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2">
                           {getScopeBadge(notification)}
                           {notification.isPinned && (
                             <Badge variant="secondary" className="text-xs">
@@ -149,7 +169,7 @@ const NotificationPopup = ({ isOpen, onClose }) => {
                         </div>
                       </div>
                       {!notification.isRead && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-1"></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-1 flex-shrink-0"></div>
                       )}
                     </div>
                   </CardHeader>
@@ -177,6 +197,12 @@ const NotificationPopup = ({ isOpen, onClose }) => {
                         </Button>
                       )}
                     </div>
+                    
+                    {notification.url && (
+                      <div className="mt-2 flex items-center text-xs text-blue-600 dark:text-blue-400">
+                        <span>Nhấp để xem chi tiết →</span>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

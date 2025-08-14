@@ -134,7 +134,7 @@ const MyRegistrationsPage = () => {
                         </Badge>
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Cuộc thi: {registration.contestId}
+                        Cuộc thi: {registration.contestId?.name || registration.contestId}
                       </p>
                     </div>
                     <div className="text-right text-sm text-muted-foreground">

@@ -21,8 +21,8 @@ const ContestCreatePage = () => {
     timeline: {
       registrationStart: '',
       registrationEnd: '',
-      contestStart: '', // Will be auto-calculated
-      contestEnd: '', // Will be auto-calculated
+      contestStart: '', 
+      contestEnd: '',
     },
     rounds: [
       {
@@ -31,6 +31,15 @@ const ContestCreatePage = () => {
         startDate: '',
         endDate: '',
         order: 1,
+        description: '',
+        isActive: true,
+      },
+      {
+        name: 'Vòng chung kết',
+        type: 'final',
+        startDate: '',
+        endDate: '',
+        order: 2,
         description: '',
         isActive: true,
       }
