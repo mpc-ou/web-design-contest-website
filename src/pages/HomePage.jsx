@@ -16,11 +16,17 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const HomePage = () => {
   const [contests, setContests] = useState([]);
   const [currentContest, setCurrentContest] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useDocumentMeta({
+    title: "Trang chủ - Cuộc thi thiết kế web",
+    description: "Khám phá các cuộc thi thiết kế web hấp dẫn dành cho sinh viên"
+  });
   const { user } = useAuth();
 
   useEffect(() => {

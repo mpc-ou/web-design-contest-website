@@ -26,6 +26,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { apiService } from "../services/api";
 import { toast } from 'sonner';
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
 
 const ContestsPage = () => {
   const [contests, setContests] = useState([]);
@@ -44,6 +45,11 @@ const ContestsPage = () => {
   useEffect(() => {
     fetchContests(1, true);
   }, [filters]);
+
+  useDocumentMeta({
+    title: "Danh sách cuộc thi",
+    description: "Xem và tham gia các cuộc thi hấp dẫn",
+  });
 
   const fetchContests = async (page = 1, reset = false) => {
     try {

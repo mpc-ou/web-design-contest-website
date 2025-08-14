@@ -6,11 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const ProfileEditPage = () => {
   const navigate = useNavigate();
   const { currentUser, userInfo } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  useDocumentMeta({
+    title: "Chỉnh sửa hồ sơ - Cuộc thi thiết kế web",
+    description: "Cập nhật thông tin cá nhân của bạn"
+  });
   const [formData, setFormData] = useState({
     name: '',
     phone: '',

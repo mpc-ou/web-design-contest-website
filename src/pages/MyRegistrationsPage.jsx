@@ -6,12 +6,18 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiService } from '../services/api';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const MyRegistrationsPage = () => {
   const navigate = useNavigate();
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  useDocumentMeta({
+    title: "Form đăng ký của tôi - Cuộc thi thiết kế web",
+    description: "Theo dõi trạng thái các form đăng ký tham gia cuộc thi"
+  });
+  
   useEffect(() => {
     fetchMyRegistrations();
   }, []);

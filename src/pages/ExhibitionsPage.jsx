@@ -9,11 +9,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { CalendarIcon, MagnifyingGlassIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../services/api';
 import { toast } from 'sonner';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const ExhibitionsPage = () => {
   const [exhibitions, setExhibitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  useDocumentMeta({
+    title: "Danh sách triển lãm",
+    description: "Khám phá các triển lãm nghệ thuật độc đáo",
+  });
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,

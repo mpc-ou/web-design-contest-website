@@ -6,8 +6,14 @@ import {
   ExclamationTriangleIcon,
   ArrowLeftIcon 
 } from '@heroicons/react/24/outline';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const NotFoundPage = () => {
+  useDocumentMeta({
+    title: "404 - Trang không tìm thấy",
+    description: "Xin lỗi, trang bạn đang tìm kiếm không tồn tại."
+  });
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="max-w-2xl mx-auto text-center space-y-8">

@@ -19,9 +19,10 @@ import {
 } from "@heroicons/react/24/outline";
 import FacebookIcon from "../components/icons/FacebookIcon";
 import { apiService } from "../services/api";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import MarkdownRenderer from "../components/common/MarkdownRenderer";
 import ImageGallery from "../components/common/ImageGallery";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
 
 const ContestDetailPage = () => {
   const { contestCode } = useParams();
@@ -37,7 +38,7 @@ const ContestDetailPage = () => {
       } catch (error) {
         setError("Không thể tải thông tin cuộc thi");
         console.error("Error fetching contest:", error);
-        toast.error('Không thể tải thông tin cuộc thi');
+        toast.error("Không thể tải thông tin cuộc thi");
       } finally {
         setLoading(false);
       }
@@ -56,30 +57,36 @@ const ContestDetailPage = () => {
     });
   };
 
+  useDocumentMeta({
+    title: contest?.name,
+    description: contest?.description,
+  });
+
   const registrationOpenStatus = (contest) => {
-    if (!contest?.timeline) return {
-      status: 'closed',
-      message: 'Đã đóng đăng ký'
-    };
+    if (!contest?.timeline)
+      return {
+        status: "closed",
+        message: "Đã đóng đăng ký",
+      };
     const now = new Date();
     const regStart = new Date(contest.timeline.registrationStart);
     const regEnd = new Date(contest.timeline.registrationEnd);
     if (now < regStart) {
       return {
-        status: 'upcoming',
-        message: 'Sắp mở đăng ký'
-      }
+        status: "upcoming",
+        message: "Sắp mở đăng ký",
+      };
     }
     if (now >= regStart && now <= regEnd) {
       return {
-        status: 'open',
-        message: 'Đang mở đăng ký'
-      }
+        status: "open",
+        message: "Đang mở đăng ký",
+      };
     }
     return {
-      status: 'closed',
-      message: 'Đã đóng đăng ký'
-    }
+      status: "closed",
+      message: "Đã đóng đăng ký",
+    };
   };
 
   if (loading) {
@@ -123,7 +130,9 @@ const ContestDetailPage = () => {
               <div className="flex items-center gap-2 mb-4">
                 <Badge
                   variant={
-                    registrationOpenStatus(contest).status === 'open' ? "secondary" : "outline"
+                    registrationOpenStatus(contest).status === "open"
+                      ? "secondary"
+                      : "outline"
                   }
                 >
                   {registrationOpenStatus(contest).message}
@@ -258,9 +267,9 @@ const ContestDetailPage = () => {
               <CardDescription>
                 {registrationOpenStatus(contest).message}
               </CardDescription>
-            </CardHeader>   
+            </CardHeader>
             <CardContent>
-              {registrationOpenStatus(contest).status === 'open' ? (
+              {registrationOpenStatus(contest).status === "open" ? (
                 contest.hadRegistered ? (
                   <Button disabled className="w-full">
                     Đã đăng ký
@@ -350,7 +359,10 @@ const ContestDetailPage = () => {
             </CardHeader>
             <CardContent>
               <div className="flex gap-2">
-                <Link to={`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`} target="_blank">
+                <Link
+                  to={`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`}
+                  target="_blank"
+                >
                   <FacebookIcon className="h-4 w-4" />
                 </Link>
               </div>

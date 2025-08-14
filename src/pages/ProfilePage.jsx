@@ -26,6 +26,8 @@ import {
   GlobeAltIcon
 } from '@heroicons/react/24/outline';
 
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
+
 import CodeBlock from '../components/common/CodeBlock';
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { useNotification } from '../hooks/useNotification';
@@ -42,6 +44,11 @@ const ProfilePage = () => {
   const [showBackendToken, setShowBackendToken] = useState(false);
   const { copyToClipboard } = useCopyToClipboard();
   const { notification, showSuccess, showError } = useNotification();
+
+  useDocumentMeta({
+    title: "Hồ sơ cá nhân - Cuộc thi thiết kế web",
+    description: "Xem và chỉnh sửa thông tin cá nhân của bạn"
+  });
 
   useEffect(() => {
     getTokens();

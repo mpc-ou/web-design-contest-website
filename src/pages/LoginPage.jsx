@@ -9,6 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
+
 import { Alert, AlertDescription } from "../components/ui/alert";
 import GoogleIcon from "../components/icons/GoogleIcon";
 const LoginPage = () => {
@@ -16,6 +18,11 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const { loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  useDocumentMeta({
+    title: "Đăng nhập - Cuộc thi thiết kế web",
+    description: "Đăng nhập để tham gia cuộc thi thiết kế web"
+  });
 
   const handleGoogleLogin = async () => {
     try {

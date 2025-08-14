@@ -15,11 +15,17 @@ import {
   ComputerDesktopIcon
 } from '@heroicons/react/24/outline';
 import { apiService } from '../services/api';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const FAQ = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [expandedItems, setExpandedItems] = useState(new Set());
+
+  useDocumentMeta({
+    title: "Câu hỏi thường gặp",
+    description: "Tìm câu trả lời cho những thắc mắc phổ biến về cuộc thi"
+  });
   const [faqData, setFaqData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

@@ -7,6 +7,7 @@ import { Badge } from '../components/ui/badge';
 import { CalendarIcon, ArrowLeftIcon, PhotoIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 import MediaViewer from '../components/common/MediaViewer';
 import { toast } from 'sonner';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const ExhibitionDetailPage = () => {
   const { exhibitionId } = useParams();
@@ -17,6 +18,11 @@ const ExhibitionDetailPage = () => {
   const [hasNext, setHasNext] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+
+  useDocumentMeta({
+    title: exhibition?.name || "Triển lãm",
+    description: exhibition?.description || "Chi tiết triển lãm",
+  });
 
   useEffect(() => {
     const fetchDetail = async () => {

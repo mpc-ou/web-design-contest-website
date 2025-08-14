@@ -12,11 +12,17 @@ import {
 } from '@heroicons/react/24/outline';
 import { apiService } from '../services/api';
 import { sponsorBenefits, sponsorNotes } from '../constants/sponsorBenefits';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const SponsorsPage = () => {
   const [sponsors, setSponsors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  useDocumentMeta({
+    title: "Nhà tài trợ - Cuộc thi thiết kế web",
+    description: "Xem danh sách các nhà tài trợ cho cuộc thi thiết kế web"
+  });
 
   useEffect(() => {
     fetchSponsors();

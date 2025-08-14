@@ -6,11 +6,17 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { CalendarIcon, TrophyIcon, TicketIcon, PlayIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../services/api';
 import MinigameDetail from '../components/minigame/MinigameDetail';
-
+import { useDocumentMeta } from '../hooks/useDocumentMeta'
+ 
 const MinigamesPage = () => {
   const [minigames, setMinigames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  useDocumentMeta({
+    title: "Minigames - Cuộc thi thiết kế web",
+    description: "Khám phá các minigame thú vị và tham gia ngay!"
+  });
   const [selectedMinigame, setSelectedMinigame] = useState(null);
 
   useEffect(() => {

@@ -25,6 +25,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { apiService } from "../services/api";
 
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
+
 const TeamsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [teams, setTeams] = useState([]);
@@ -33,6 +35,11 @@ const TeamsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [pagination, setPagination] = useState({});
+
+  useDocumentMeta({
+    title: "Các đội thi - Cuộc thi thiết kế web",
+    description: "Xem danh sách các đội thi tham gia cuộc thi"
+  });
 
   // Filters
   const [searchTerm, setSearchTerm] = useState(
