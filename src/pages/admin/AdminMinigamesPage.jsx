@@ -60,7 +60,7 @@ const AdminMinigamesPage = () => {
         <div className="space-y-1">
           <div className="font-semibold text-base">{item.name}</div>
           <div className="text-sm text-muted-foreground line-clamp-2" title={item.description}>
-            {item.description || 'Không có mô tả'}
+            {item.description.length > 100 ? item.description.substring(0, 100) + '...' : item.description}
           </div>
           <div className="flex items-center gap-2 text-xs">
             <Badge variant="outline" className="h-5">

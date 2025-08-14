@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Image, Upload, X } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Save, Image, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { apiService } from '../../../services/api';
-import PageHeader from '../../../components/admin/ui/PageHeader';
+import { apiService } from '../../../../services/api';
+import PageHeader from '../../../../components/admin/ui/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import FormField from '../../../components/admin/ui/FormField';
+import FormField from '../../../../components/admin/ui/FormField';
 
-const ExhibitionCreatePage = () => {
+const ItemCreatePage = () => {
+  const { id: exhibitionId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -118,7 +119,7 @@ const ExhibitionCreatePage = () => {
         });
       }
       
-      await apiService.createAdminExhibitionItem(exhibitionId, submitData);
+      await apiService.createExhibitionItem(exhibitionId, submitData);
       toast.success('Tạo tác phẩm thành công');
       navigate(`/admin/exhibitions/${exhibitionId}`);
     } catch (error) {
@@ -147,11 +148,9 @@ const ExhibitionCreatePage = () => {
 
   return (
     <div className="space-y-6">
-
-      
       <PageHeader
-        title="Tạo triển lãm mới"
-        description="Nhập thông tin cho triển lãm mới"
+        title="Thêm tác phẩm mới"
+        description="Thêm tác phẩm vào triển lãm"
         actions={pageActions}
       />
 
@@ -324,4 +323,4 @@ const ExhibitionCreatePage = () => {
   );
 };
 
-export default ExhibitionCreatePage;
+export default ItemCreatePage;

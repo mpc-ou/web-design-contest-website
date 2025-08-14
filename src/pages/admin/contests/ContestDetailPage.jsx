@@ -309,11 +309,11 @@ const ContestDetailPage = () => {
           description="Ảnh đại diện của cuộc thi"
           icon={ImageIcon}
         >
-          <div className="aspect-video w-full max-w-md">
+          <div className="aspect-video max-w-md">
             <img
               src={contest.thumbnail}
               alt={`${contest.name} thumbnail`}
-              className="w-full h-full object-cover rounded-lg border"
+              className="w-full h-full overflow-hidden object-cover rounded-lg border"
               onError={(e) => {
                 e.target.src = '/img/placeholder-image.jpg';
               }}

@@ -13,9 +13,7 @@ body, html {
   flex-direction: column;
 }
 
-main {
-  flex: 1 0 auto;
-}
+
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -276,7 +274,8 @@ main {
 
 *::-webkit-scrollbar
 {
-	width: 5px;
+	width: 8px;
+  height: 8px;
 	background-color: #F5F5F5;
 }
 
@@ -290,3 +289,4 @@ main {
 											  #1a2554 51%,
 											  #1d4469 100%);
 }
+

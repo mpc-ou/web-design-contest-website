@@ -217,7 +217,8 @@ export const apiService = {
     });
   },
   deleteAdminExhibitionItem: (exhibitionId, itemId) => api.delete(`/api/admin/exhibitions/${exhibitionId}/items/${itemId}`),
-  
+  reorderExhibitionItems: (exhibitionId, orderData) => api.put(`/api/admin/exhibitions/${exhibitionId}/items/reorder`, orderData),
+
   // Admin Minigames - API đầy đủ theo backend
   getAdminMinigames: (params = {}) => api.get('/api/admin/minigames', { params }),
   getAdminMinigame: (minigameId) => api.get(`/api/admin/minigames/${minigameId}`),

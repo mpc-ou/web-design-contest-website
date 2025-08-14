@@ -65,6 +65,10 @@ import AdminFAQDetailPage from '../pages/admin/faqs/FAQDetailPage';
 import AdminFAQCreatePage from '../pages/admin/faqs/FAQCreatePage';
 import AdminFAQEditPage from '../pages/admin/faqs/FAQEditPage';
 
+import ItemCreatePage from '../pages/admin/exhibitions/items/ItemCreatePage';
+import ItemDetailPage from '../pages/admin/exhibitions/items/ItemDetailPage';
+import ItemEditPage from '../pages/admin/exhibitions/items/ItemEditPage';
+
 // Export admin routes để sử dụng trực tiếp trong App.jsx
 export const getAdminRoutes = () => (
   <Route path="/admin" element={<AdminProtectedRoute />}>
@@ -103,7 +107,10 @@ export const getAdminRoutes = () => (
       <Route path="exhibitions/create" element={<AdminExhibitionCreatePage />} />
       <Route path="exhibitions/:id" element={<AdminExhibitionDetailPage />} />
       <Route path="exhibitions/:id/edit" element={<AdminExhibitionEditPage />} />
-      
+      <Route path="exhibitions/:id/items/create" element={<ItemCreatePage />} />
+      <Route path="exhibitions/:id/items/:itemId" element={<ItemDetailPage />} />
+      <Route path="exhibitions/:id/items/:itemId/edit" element={<ItemEditPage />} />
+
       {/* Minigames Management */}
       <Route path="minigames" element={<AdminMinigamesPage />} />
       <Route path="minigames/create" element={<AdminMinigameCreatePage />} />

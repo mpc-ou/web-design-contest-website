@@ -1,16 +1,19 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Image, Upload, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Save, Image, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { apiService } from '../../../services/api';
-import PageHeader from '../../../components/admin/ui/PageHeader';
+import { apiService } from '../../../../services/api';
+import PageHeader from '../../../../components/admin/ui/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import FormField from '../../../components/admin/ui/FormField';
+import FormField from '../../../../components/admin/ui/FormField';
+import LoadingCard from '../../../../components/admin/ui/LoadingCard';
 
-const ExhibitionCreatePage = () => {
+const ItemEditPage = () => {
+  const { id: exhibitionId, itemId } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -22,9 +25,42 @@ const ExhibitionCreatePage = () => {
     technologies: [],
     awards: []
   });
-  const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [imagesToAdd, setImagesToAdd] = useState([]);
   const [imagesPreview, setImagesPreview] = useState([]);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    fetchItemDetail();
+  }, [itemId]);
+
+  const fetchItemDetail = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getExhibitionItem(itemId);
+      const item = response.data;
+      
+      setFormData({
+        title: item.title || '',
+        description: item.description || '',
+        teamName: item.teamName || '',
+        teamId: item.teamId || '',
+        videoUrl: item.videoUrl || '',
+        githubUrl: item.githubUrl || '',
+        websiteUrl: item.websiteUrl || '',
+        technologies: item.technologies || [],
+        awards: item.awards || []
+      });
+      
+      setExistingImages(item.images || []);
+    } catch (error) {
+      console.error('Error fetching item:', error);
+      toast.error('Có lỗi khi tải thông tin tác phẩm');
+      navigate(`/admin/exhibitions/${exhibitionId}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (name, value) => {
     setFormData(prev => ({
@@ -51,7 +87,7 @@ const ExhibitionCreatePage = () => {
 
   const handleImagesChange = (e) => {
     const files = Array.from(e.target.files);
-    setImages(files);
+    setImagesToAdd(files);
     
     const previews = [];
     files.forEach(file => {
@@ -66,9 +102,13 @@ const ExhibitionCreatePage = () => {
     });
   };
 
-  const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+  const removeNewImage = (index) => {
+    setImagesToAdd(prev => prev.filter((_, i) => i !== index));
     setImagesPreview(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (index) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const validateForm = () => {
@@ -99,7 +139,7 @@ const ExhibitionCreatePage = () => {
     }
 
     try {
-      setLoading(true);
+      setSaving(true);
       
       const submitData = new FormData();
       Object.keys(formData).forEach(key => {
@@ -112,20 +152,26 @@ const ExhibitionCreatePage = () => {
         }
       });
       
-      if (images.length > 0) {
-        images.forEach(image => {
+      // Add existing images
+      if (existingImages.length > 0) {
+        submitData.append('existingImages', JSON.stringify(existingImages));
+      }
+      
+      // Add new images
+      if (imagesToAdd.length > 0) {
+        imagesToAdd.forEach(image => {
           submitData.append('images', image);
         });
       }
       
-      await apiService.createAdminExhibitionItem(exhibitionId, submitData);
-      toast.success('Tạo tác phẩm thành công');
-      navigate(`/admin/exhibitions/${exhibitionId}`);
+      await apiService.updateExhibitionItem(exhibitionId, itemId, submitData);
+      toast.success('Cập nhật tác phẩm thành công');
+      navigate(`/admin/exhibitions/${exhibitionId}/items/${itemId}`);
     } catch (error) {
-      console.error('Error creating exhibition item:', error);
-      toast.error('Có lỗi khi tạo tác phẩm: ' + (error.response?.data?.error || error.message));
+      console.error('Error updating exhibition item:', error);
+      toast.error('Có lỗi khi cập nhật tác phẩm: ' + (error.response?.data?.error || error.message));
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -134,24 +180,31 @@ const ExhibitionCreatePage = () => {
       label: 'Quay lại',
       variant: 'outline',
       icon: ArrowLeft,
-      onClick: () => navigate(`/admin/exhibitions/${exhibitionId}`),
+      onClick: () => navigate(`/admin/exhibitions/${exhibitionId}/items/${itemId}`),
     },
     {
       label: 'Lưu',
       variant: 'default',
       icon: Save,
       onClick: handleSubmit,
-      disabled: loading,
+      disabled: saving,
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <LoadingCard showHeader={true} />
+        <LoadingCard />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-
-      
       <PageHeader
-        title="Tạo triển lãm mới"
-        description="Nhập thông tin cho triển lãm mới"
+        title={`Chỉnh sửa: ${formData.title}`}
+        description="Cập nhật thông tin tác phẩm"
         actions={pageActions}
       />
 
@@ -259,6 +312,34 @@ const ExhibitionCreatePage = () => {
           </CardHeader>
           <CardContent>
             <div>
+              <h3 className="mb-2 text-sm font-medium">Hình ảnh hiện tại</h3>
+              {existingImages.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                  {existingImages.map((image, index) => (
+                    <div key={index} className="relative h-32 bg-muted rounded-md overflow-hidden group">
+                      <img 
+                        src={image} 
+                        alt={`Current ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeExistingImage(index)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground mb-4">Không có hình ảnh</div>
+              )}
+
+              <h3 className="mb-2 text-sm font-medium">Thêm hình ảnh mới</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2">
                 {imagesPreview.length > 0 ? (
                   <>
@@ -272,7 +353,7 @@ const ExhibitionCreatePage = () => {
                         <button
                           type="button"
                           className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => removeImage(index)}
+                          onClick={() => removeNewImage(index)}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -304,7 +385,7 @@ const ExhibitionCreatePage = () => {
                       <path d="M12 12v9"></path>
                       <path d="m16 16-4-4-4 4"></path>
                     </svg>
-                    <span className="text-sm text-gray-500">Click để upload hình ảnh</span>
+                    <span className="text-sm text-gray-500">Click để upload hình ảnh mới</span>
                     <span className="text-xs text-gray-400 mt-1">Có thể chọn nhiều hình</span>
                     <input
                       type="file"
@@ -324,4 +405,4 @@ const ExhibitionCreatePage = () => {
   );
 };
 
-export default ExhibitionCreatePage;
+export default ItemEditPage;

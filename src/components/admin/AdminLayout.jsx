@@ -10,15 +10,19 @@ import AdminHeader from './AdminHeader';
 
 const AdminLayout = () => {
   return (
-    <div className="h-screen">
+    <div className="min-h-screen w-full flex flex-col">
       <SidebarProvider>
-        <AdminSidebar />
-        <SidebarInset className="flex flex-col h-full">
-          <AdminHeader />
-          <div className="flex-1 overflow-auto p-4 min-h-0">
-            <Outlet />
-          </div>
-        </SidebarInset>
+        <div className="flex-1 flex min-h-0">
+          <AdminSidebar />
+          <SidebarInset className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <AdminHeader />
+            <main className="flex-1 overflow-auto">
+              <div className="p-4 max-w-full">
+                <Outlet />
+              </div>
+            </main>
+          </SidebarInset>
+        </div>
       </SidebarProvider>
     </div>
   );
