@@ -62,6 +62,8 @@ const ContestsPage = () => {
       const params = {
         page,
         perPage: 12,
+        sortBy: "createAt",
+        order: "asc",
         ...(filters.search && { search: filters.search }),
         ...(filters.status !== "all" && { status: filters.status }),
       };
@@ -209,9 +211,8 @@ const ContestsPage = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value="active">Đang hoạt động</SelectItem>
-            <SelectItem value="draft">Nháp</SelectItem>
-            <SelectItem value="completed">Đã kết thúc</SelectItem>
+            <SelectItem value="upcoming">Sắp mở đăng ký</SelectItem>
+            <SelectItem value="ended">Đã kết thúc</SelectItem>
           </SelectContent>
         </Select>
       </div>

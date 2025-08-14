@@ -33,14 +33,17 @@ const HomePage = () => {
     const fetchData = async () => {
       try {
         // Fetch contests from real API
-        const contestResponse = await apiService.getContests();
+        const contestResponse = await apiService.getContests({
+          sortBy: 'createAt',
+          order: 'asc',
+        });
         const contestsData = contestResponse.data.data || [];
         setContests(contestsData);
         
         // Set the first active contest as current contest
         const activeContest = contestsData.find(contest => 
-          contest.status === 'active' || contest.isActive
-        ) || contestsData[0];
+          contest.status !== 'ended' || contest.isActive
+        )?.[0];
         
         if (activeContest) {
           setCurrentContest(activeContest);
