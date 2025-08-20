@@ -95,7 +95,7 @@ const IntroductionSection = () => {
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
               <img
-                src="https://oumpc.github.io/src/asset/image/wd/avatar_wd.jpg"
+                src="/img/wd.jpg"
                 alt="Web Design Contest"
                 className="w-full h-auto object-cover"
                 loading="lazy"

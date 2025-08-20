@@ -77,7 +77,7 @@ const CurrentContestSection = ({ contest }) => {
               </div>
               
               <CardTitle className="text-2xl mb-4">{contest.name}</CardTitle>
-              <CardDescription className="text-base mb-6">{contest.description}</CardDescription>
+              <CardDescription className="text-base mb-6">{contest.description?.slice(0, 200)}...</CardDescription>
               
               <div className="space-y-3 mb-6">
                 {contest.timeline && (

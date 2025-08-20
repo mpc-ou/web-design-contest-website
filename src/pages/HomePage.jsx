@@ -39,12 +39,14 @@ const HomePage = () => {
         });
         const contestsData = contestResponse.data.data || [];
         setContests(contestsData);
+
+        console.log('Fetched contests:', contestsData);
         
         // Set the first active contest as current contest
-        const activeContest = contestsData.find(contest => 
-          contest.status !== 'ended' || contest.isActive
-        )?.[0];
-        
+        const activeContest = contestsData.find(contest =>
+          contest.status !== 'ended' && contest.isActive
+        );
+
         if (activeContest) {
           setCurrentContest(activeContest);
         }
