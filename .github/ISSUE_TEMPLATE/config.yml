@@ -1,0 +1,9 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Facebook
+    url: https://www.facebook.com/CLBLapTrinhTrenThietBiDiDong
+    about: Contact us via Facebook for support or inquiries.
+  - name: Github
+    url: https://github.com/mpc-ou
+    about: About my team and project.
+    
